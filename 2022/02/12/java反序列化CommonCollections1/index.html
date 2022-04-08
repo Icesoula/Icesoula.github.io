@@ -489,7 +489,7 @@
 
 <p>构造函数中的第二个参数就是我们传入的Map，这个之前已经提到过。而第一个参数是一个Annotation类，这个我们之后</p>
 <h2 id="使用反射"><a href="#使用反射" class="headerlink" title="使用反射"></a>使用反射</h2><p>接下来我们尝试使用反序列化触发POC</p>
-<img src="/Users/shihiroshisakai/Desktop/截屏2022-02-13 下午9.25.18.png" alt="截屏2022-02-13 下午9.25.18" style="zoom:50%;" />
+<img src="/Downloads/common11.png"  style="zoom:50%;" />
 
 <p>这里报错了：Exception in thread “main” java.io.NotSerializableException: java.lang.Runtime，这里的原因是：java中不是所有类都支持序列化，待序列化的对象和所有它使用的内部属性对象，都必须实现java.io.Serializable接口，而这里我们传入的Runtime并没有实现该接口，所以是不被准许序列化的。</p>
 <p>那么如何解决这个问题呢？我们可以用反射得到Runtime.class，避免了直接使用这个类。</p>

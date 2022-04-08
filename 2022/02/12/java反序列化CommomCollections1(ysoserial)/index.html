@@ -491,7 +491,8 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TestInvocationHandler</span>();</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;,handler);</span><br><span class="line"></span><br><span class="line">        System.out.println(proxyMap.put(<span class="string">&quot;Key&quot;</span>,<span class="string">&quot;Value&quot;</span>));</span><br><span class="line">        System.out.println(proxyMap.get(<span class="string">&quot;key&quot;</span>));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
 
 <p>这里给出运行结果：</p>
-<p>![截屏2022-02-21 下午3.38.03](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-02-21 下午3.38.03.png)</p>
+<img src="/Downloads/commony11.png"  style="zoom:50%;" />
+
 <p>我们之前反序列化用的sun.reflect.annotation.AnnotationInvocationHandler，实际上就是一个InvocationHandler。那么如果我们把它传给Proxy.newProxyInstance的第三个参数，那么在readObject中Map调用任意方法时，就会调用到这个invoke方法，我们的目的就实现了。</p>
 <h1 id="LazyMap的POC"><a href="#LazyMap的POC" class="headerlink" title="LazyMap的POC"></a>LazyMap的POC</h1><p>首先，我们要使用LazyMap来替换TransformedMap</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> LazyMap.decorate(innerMap,transformerChain);</span><br></pre></td></tr></table></figure>
@@ -505,7 +506,7 @@
 
 <p>最后再整理一次思路：</p>
 <p>LazyMap漏洞触发需要调用get函数。而AnnotationInvocationHandler的invoke方法中，有调用到这个get方法。接下来就是想办法调用这个invoke方法。AnnotationInvocationHandler是一个InvocationHandler。而所有实现了InvocationHandler接口的对象都可被传入到Proxy.newProxyInstance方法的作为第三个参数handler，最后生成一个代理proxyMap。这个代理调用任何方法最后都会调用到handler的invoke方法。然后我们就是要在反序列化的过程中调用到proxyMap的任意方法。这个就和之前的POC一样了。新建一个AnnotationInvocationHandler对象，把proxyMap作为参数传入其构造函数。然后在这个AnnotationInvocationHandler对象反序列化的过程中触发的readObject方法就会触发proxyMap的方法。</p>
-<h1 id="高版本下CommonCollections无法使用问题"><a href="#高版本下CommonCollections无法使用问题" class="headerlink" title="高版本下CommonCollections无法使用问题"></a>高版本下CommonCollections无法使用问题</h1>
+
                 
             </div>
             <hr/>
