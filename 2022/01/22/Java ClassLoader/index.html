@@ -483,32 +483,108 @@
 <p>System也叫App(系统类加载器)：它负责将用户类路径(java -classpath或-Djava.class.path变量所指的目录，即当前类所在路径及其引用的第三方类库的路径加载到内存中。（一般用于加载我们自己写的类）。具体可由系统类加载器加载到的路径可通过<code>System.getProperty(&quot;java.class.path&quot;)</code>查看</p>
 <p>（扩展类加载器和系统类加载器也需要被加载到JVM内存中，这里是由启动类加载器来完成的。因为扩展类加载器和系统类加载器也在核心类库中。）</p>
 <p>这里为了更好的理解，我们查看源码sun.misc.Launcher。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Launcher</span> &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">URLStreamHandlerFactory</span> <span class="variable">factory</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Launcher</span>.Factory();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">Launcher</span> <span class="variable">launcher</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">Launcher</span>();</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="type">String</span> <span class="variable">bootClassPath</span> <span class="operator">=</span> System.getProperty(<span class="string">&quot;sun.boot.class.path&quot;</span>);</span><br><span class="line">    <span class="keyword">private</span> ClassLoader loader;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> URLStreamHandler fileHandler;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Launcher <span class="title function_">getLauncher</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> launcher;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">Launcher</span><span class="params">()</span> &#123;</span><br><span class="line">        Launcher.ExtClassLoader var1;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            var1 = Launcher.ExtClassLoader.getExtClassLoader();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException var10) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InternalError</span>(<span class="string">&quot;Could not create extension class loader&quot;</span>, var10);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="built_in">this</span>.loader = Launcher.AppClassLoader.getAppClassLoader(var1);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException var9) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InternalError</span>(<span class="string">&quot;Could not create application class loader&quot;</span>, var9);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Thread.currentThread().setContextClassLoader(<span class="built_in">this</span>.loader);</span><br><span class="line">        <span class="type">String</span> <span class="variable">var2</span> <span class="operator">=</span> System.getProperty(<span class="string">&quot;java.security.manager&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (var2 != <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="type">SecurityManager</span> <span class="variable">var3</span> <span class="operator">=</span> <span class="literal">null</span>;</span><br><span class="line">            <span class="keyword">if</span> (!<span class="string">&quot;&quot;</span>.equals(var2) &amp;&amp; !<span class="string">&quot;default&quot;</span>.equals(var2)) &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    var3 = (SecurityManager)<span class="built_in">this</span>.loader.loadClass(var2).newInstance();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (IllegalAccessException var5) &#123;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InstantiationException var6) &#123;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (ClassNotFoundException var7) &#123;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (ClassCastException var8) &#123;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                var3 = <span class="keyword">new</span> <span class="title class_">SecurityManager</span>();</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (var3 == <span class="literal">null</span>) &#123;</span><br><span class="line">                <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">InternalError</span>(<span class="string">&quot;Could not create SecurityManager: &quot;</span> + var2);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            System.setSecurityManager(var3);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">public</span> ClassLoader <span class="title function_">getClassLoader</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="built_in">this</span>.loader;</span><br><span class="line">    &#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">AppClassLoader</span> <span class="keyword">extends</span> <span class="title class_">URLClassLoader</span>&#123;...&#125;</span><br><span class="line">  </span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">class</span> <span class="title class_">ExtClassLoader</span> <span class="keyword">extends</span> <span class="title class_">URLClassLoader</span>&#123;...&#125;</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class Launcher &#123;
+    private static URLStreamHandlerFactory factory &#x3D; new Launcher.Factory();
+    private static Launcher launcher &#x3D; new Launcher();
+    private static String bootClassPath &#x3D; System.getProperty(&quot;sun.boot.class.path&quot;);
+    private ClassLoader loader;
+    private static URLStreamHandler fileHandler;
+
+    public static Launcher getLauncher() &#123;
+        return launcher;
+    &#125;
+
+    public Launcher() &#123;
+        Launcher.ExtClassLoader var1;
+        try &#123;
+            var1 &#x3D; Launcher.ExtClassLoader.getExtClassLoader();
+        &#125; catch (IOException var10) &#123;
+            throw new InternalError(&quot;Could not create extension class loader&quot;, var10);
+        &#125;
+
+        try &#123;
+            this.loader &#x3D; Launcher.AppClassLoader.getAppClassLoader(var1);
+        &#125; catch (IOException var9) &#123;
+            throw new InternalError(&quot;Could not create application class loader&quot;, var9);
+        &#125;
+
+        Thread.currentThread().setContextClassLoader(this.loader);
+        String var2 &#x3D; System.getProperty(&quot;java.security.manager&quot;);
+        if (var2 !&#x3D; null) &#123;
+            SecurityManager var3 &#x3D; null;
+            if (!&quot;&quot;.equals(var2) &amp;&amp; !&quot;default&quot;.equals(var2)) &#123;
+                try &#123;
+                    var3 &#x3D; (SecurityManager)this.loader.loadClass(var2).newInstance();
+                &#125; catch (IllegalAccessException var5) &#123;
+                &#125; catch (InstantiationException var6) &#123;
+                &#125; catch (ClassNotFoundException var7) &#123;
+                &#125; catch (ClassCastException var8) &#123;
+                &#125;
+            &#125; else &#123;
+                var3 &#x3D; new SecurityManager();
+            &#125;
+
+            if (var3 &#x3D;&#x3D; null) &#123;
+                throw new InternalError(&quot;Could not create SecurityManager: &quot; + var2);
+            &#125;
+
+            System.setSecurityManager(var3);
+        &#125;
+
+    &#125;
+  
+  public ClassLoader getClassLoader() &#123;
+        return this.loader;
+    &#125;
+  
+  static class AppClassLoader extends URLClassLoader&#123;...&#125;
+  
+  static class ExtClassLoader extends URLClassLoader&#123;...&#125;
+ </code></pre>
 
 <p>代码很长，我们这里只贴这么多。这里我们可以看到，AppClassLoader和ExtClassLoader是Launcher中定义的两个内部类，并且在Launcher构造函数中初始化。但是我们并没有见到Bootstrap，之前说过，Bootstrap是由c++写的，所以自然不会出现在这里。但是这里通过System.getProperty(“sun.boot.class.path”)得到了Bootstrap加载的jar包路径。</p>
 <p>我们先创建一个Test文件</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">say</span><span class="params">()</span>&#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;Say Hello&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class Test &#123;
+    public void say()&#123;
+        System.out.println(&quot;Say Hello&quot;);
+    &#125;
+&#125;</code></pre>
 
 <p>然后写一个测试类，用getClassLoader函数观察这个类是由哪个加载器加载的</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassLoaderTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> Test.class.getClassLoader();</span><br><span class="line">        System.out.println(classLoader);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class ClassLoaderTest &#123;
+    public static void main(String[] args) &#123;
+        ClassLoader classLoader &#x3D; Test.class.getClassLoader();
+        System.out.println(classLoader);
+    &#125;
+&#125;</code></pre>
 
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sun.misc.Launcher$AppClassLoader@18b4aac2</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">sun.misc.Launcher$AppClassLoader@18b4aac2</code></pre>
 
 <p>上面是输出的结果，说明这个类是由AppClassLoader加载的，那么如果我们换成内置的String类呢？（测试代码和之前的一样，就是把Test改为String）。结果为：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">null</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">null</code></pre>
 
 <p>这里的结果是null，这并不是说String类没有加载器来加载，实际上，它是由Bootstrap来加载的。null的原因还是我们之前说的，Bootstrap是有c++写的，所以无法在java中获得它的引用。</p>
 <h3 id="加载顺序"><a href="#加载顺序" class="headerlink" title="加载顺序"></a>加载顺序</h3><h4 id="父加载类"><a href="#父加载类" class="headerlink" title="父加载类"></a>父加载类</h4><p>首先我们要引入父加载类的概念。父加载类不是父类，我们可以通过getParent方法得到某个加载器的父加载类。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassLoaderTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> Test.class.getClassLoader();</span><br><span class="line">        System.out.println(classLoader.getParent());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class ClassLoaderTest &#123;
+    public static void main(String[] args) &#123;
+        ClassLoader classLoader &#x3D; Test.class.getClassLoader();
+        System.out.println(classLoader.getParent());
+    &#125;
+&#125;</code></pre>
 
 <p>结果为</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sun.misc.Launcher$ExtClassLoader@511d50c0</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">sun.misc.Launcher$ExtClassLoader@511d50c0</code></pre>
 
 <p>通过之前的例子，我们已经知道这里的classLoader是AppClassLoader,那么它的父加载类就是ExtClassLoader。以此类推，我们接着查看ExtClassLoader的父加载类。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassLoaderTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">ClassLoader</span> <span class="variable">classLoader</span> <span class="operator">=</span> Test.class.getClassLoader();</span><br><span class="line">        System.out.println(classLoader.getParent().getParent());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">public class ClassLoaderTest &#123;
+    public static void main(String[] args) &#123;
+        ClassLoader classLoader &#x3D; Test.class.getClassLoader();
+        System.out.println(classLoader.getParent().getParent());
+    &#125;
+&#125;</code></pre>
 
 <p>结果为</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">null</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">null</code></pre>
 
 <p>看样子ExtClassLoader并没有父加载类，其实不然。它的父加载类是Bootstrap。如同我们之前说过的那样，结果是null。</p>
 <p>以上所说的关于父加载器的部分，可以直接去翻源码，能够非常清楚的看出来其中的原委，这里就不放了。</p>
@@ -520,19 +596,72 @@
 <p>loadClass：从已加载的类缓存，父加载器等位置寻找类（这里用到的就是双亲委派机制），在以上方式没有找到的情况下，执行findCLass</p>
 <p>findClass：根据基础URL指定的方式来加载加字节码，会读取字节码并将其交给defineCLass方法来处理（此方法一般被loadClass方法调用去加载指定名称类）</p>
 <p>defineClass：解析对应的字节码，产生对应的内部数据结构放置到方法区（其实就是产生Class对象并放到方法区中）</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">protected</span> Class&lt;?&gt; loadClass(String name, <span class="type">boolean</span> resolve)</span><br><span class="line">        <span class="keyword">throws</span> ClassNotFoundException</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">synchronized</span> (getClassLoadingLock(name)) &#123;</span><br><span class="line">            <span class="comment">// 首先，检测是否已经加载</span></span><br><span class="line">            Class&lt;?&gt; c = findLoadedClass(name);</span><br><span class="line">            <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">               <span class="comment">//如果没加载的话就会进入这里，向上委托其父加载器加载</span></span><br><span class="line">                <span class="type">long</span> <span class="variable">t0</span> <span class="operator">=</span> System.nanoTime();</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    <span class="keyword">if</span> (parent != <span class="literal">null</span>) &#123;</span><br><span class="line">                        <span class="comment">//父加载器不为空则调用父加载器的loadClass方法</span></span><br><span class="line">                        c = parent.loadClass(name, <span class="literal">false</span>);</span><br><span class="line">                    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                        <span class="comment">//父加载器为空则调用	Bootstrap ClassLoader</span></span><br><span class="line">                        c = findBootstrapClassOrNull(name);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                    <span class="comment">// ClassNotFoundException thrown if class not found</span></span><br><span class="line">                    <span class="comment">// from the non-null parent class loader</span></span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">if</span> (c == <span class="literal">null</span>) &#123;</span><br><span class="line">                    <span class="comment">// If still not found, then invoke findClass in order</span></span><br><span class="line">                    <span class="comment">// to find the class.</span></span><br><span class="line">                    <span class="type">long</span> <span class="variable">t1</span> <span class="operator">=</span> System.nanoTime();</span><br><span class="line">                  <span class="comment">//父加载器没找到的话，就会调用这里的findClass.</span></span><br><span class="line">                    c = findClass(name);</span><br><span class="line"></span><br><span class="line">                    <span class="comment">// this is the defining class loader; record the stats</span></span><br><span class="line">                    sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);</span><br><span class="line">                    sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);</span><br><span class="line">                    sun.misc.PerfCounter.getFindClasses().increment();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (resolve) &#123;</span><br><span class="line">                resolveClass(c);</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> c;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">protected Class&lt;?&gt; loadClass(String name, boolean resolve)
+        throws ClassNotFoundException
+    &#123;
+        synchronized (getClassLoadingLock(name)) &#123;
+            &#x2F;&#x2F; 首先，检测是否已经加载
+            Class&lt;?&gt; c &#x3D; findLoadedClass(name);
+            if (c &#x3D;&#x3D; null) &#123;
+               &#x2F;&#x2F;如果没加载的话就会进入这里，向上委托其父加载器加载
+                long t0 &#x3D; System.nanoTime();
+                try &#123;
+                    if (parent !&#x3D; null) &#123;
+                        &#x2F;&#x2F;父加载器不为空则调用父加载器的loadClass方法
+                        c &#x3D; parent.loadClass(name, false);
+                    &#125; else &#123;
+                        &#x2F;&#x2F;父加载器为空则调用	Bootstrap ClassLoader
+                        c &#x3D; findBootstrapClassOrNull(name);
+                    &#125;
+                &#125; catch (ClassNotFoundException e) &#123;
+                    &#x2F;&#x2F; ClassNotFoundException thrown if class not found
+                    &#x2F;&#x2F; from the non-null parent class loader
+                &#125;
+
+                if (c &#x3D;&#x3D; null) &#123;
+                    &#x2F;&#x2F; If still not found, then invoke findClass in order
+                    &#x2F;&#x2F; to find the class.
+                    long t1 &#x3D; System.nanoTime();
+                  &#x2F;&#x2F;父加载器没找到的话，就会调用这里的findClass.
+                    c &#x3D; findClass(name);
+
+                    &#x2F;&#x2F; this is the defining class loader; record the stats
+                    sun.misc.PerfCounter.getParentDelegationTime().addTime(t1 - t0);
+                    sun.misc.PerfCounter.getFindClassTime().addElapsedTimeFrom(t1);
+                    sun.misc.PerfCounter.getFindClasses().increment();
+                &#125;
+            &#125;
+            if (resolve) &#123;
+                resolveClass(c);
+            &#125;
+            return c;
+        &#125;
+    &#125;</code></pre>
 
 <p>这段代码很好的解释了双亲委托。    </p>
 <p>最后这里给一个例子：</p>
 <p>这里我们自己建一个java.lang的包，在这个包下面写一个名为String的类</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> java.lang;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">String</span> &#123;</span><br><span class="line">    <span class="keyword">static</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;这是自己写的String类&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">package java.lang;
+public class String &#123;
+    static &#123;
+        System.out.println(&quot;这是自己写的String类&quot;);
+    &#125;
+&#125;</code></pre>
 
 <p>然后我们测试一下：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> Loader;</span><br><span class="line"><span class="keyword">import</span> java.lang.String;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">Test</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">str</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>();</span><br><span class="line">        System.out.println(String.class.getClassLoader());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre class="language-java" data-language="java"><code class="language-java">package Loader;
+import java.lang.String;
+
+public class Test &#123;
+    public static void main(String[] args) &#123;
+        String str &#x3D; new String();
+        System.out.println(String.class.getClassLoader());
+    &#125;
+&#125;</code></pre>
 
 <p>如果这里创建的是我们自己写的String类的对象，那么将会打印“这是自己写的String类”，并且最后输出的加载器应该是AppClassLoader。</p>
 <p>运行结果</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">null</span><br></pre></td></tr></table></figure>
+<pre class="language-none"><code class="language-none">null</code></pre>
 
 <p>这里并没有打印输出，加载器给的也是null，说明这里new出来的对象并不是我们写的String类型。而是Java内置lang包下的String，也就是我们平时用的那个。这里由于是Bootstrap加载的，所以输出是null。</p>
 <p>那么为什么是这样的呢？这就是我们之前讲的双亲委派机制的很好的体现。在加载器发现在缓存中找不到String时，会向上委托，当委托给Bootstrap时，发现它的findClass可以查找到String（Java内置lang包下的String），然后把直接返回，这样就避免了调用AppClassLoader中的findClass，自然也就不会加载我们自己写的String。（如果还不明白看看下图）</p>
