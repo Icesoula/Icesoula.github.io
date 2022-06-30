@@ -537,15 +537,12 @@ Exec master.dbo.xp_cmdshell &#39;cd C:\Users\MSSQLSERVER\ &amp;&amp; hanzo.exe -
 <p>紧接着用CS自带的扫描器对22网段做个扫描</p>
 <p><img src="/Downloads/20220330213411.png"></p>
 <h2 id="Web2"><a href="#Web2" class="headerlink" title="Web2"></a>Web2</h2><p>那么该网段剩下的就还有192.168.22.149这台机子没有拿到了。在这次扫描中，发现149的80端口是开着的，于是我们挂上CS的代理直接访问。</p>
-<p>![截屏2022-03-30 下午11.56.19](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-30 下午11.56.19.png)</p>
-<p>![截屏2022-03-30 下午10.07.03](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.07.03.png)</p>
+<p>![](&#x2F;Downloads&#x2F;截屏2022-03-30 下午11.56.19.png)</p>
 <p>我们成功得到一个登陆界面，并且在用他给的用户名密码登录后抓到了一个jwt，于是到这里我满怀欣喜的去爆破了。最后也的确爆破出了结果</p>
-<p>![截屏2022-03-28 上午10.00.29](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-28 上午10.00.29.png)</p>
 <p>然而就在这个时候，我的舍友发现了些了不起的东西。他通过目录扫描找到了一个名为a.php的文件，我们访问这个文件</p>
 <p>前面是一些sql的日志信息，后面跟了个phpinfo。</p>
-<p>![截屏2022-03-31 上午12.01.59](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Library&#x2F;Application Support&#x2F;typora-user-images&#x2F;截屏2022-03-31 上午12.01.59.png)</p>
+<p>![](&#x2F;Downloads&#x2F;截屏2022-03-31 上午12.01.59.png)</p>
 <p>但最后这个东西就让人有点不淡定了，这貌似就是一个一句话木马没参数报的错。这里我们直接给蚁剑挂代理打。</p>
-<p>![截屏2022-03-30 下午10.24.07](&#x2F;Users&#x2F;shihiroshisakai&#x2F;Desktop&#x2F;截屏2022-03-30 下午10.24.07.png)</p>
 <p>然后居然真成功了。直接上线CS，这里以data1为跳板再起一个监听器</p>
 <p><img src="/Downloads/20220330224350.png"></p>
 <p>然后生成一个可执行文件上传到web2中运行</p>
